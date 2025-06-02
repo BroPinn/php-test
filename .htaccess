@@ -11,10 +11,20 @@ RewriteEngine On
     Deny from all
 </Files>
 
-# Optional: Clean URLs (uncomment if you want to remove ?page= from URLs)
-# RewriteCond %{REQUEST_FILENAME} !-f
-# RewriteCond %{REQUEST_FILENAME} !-d
-# RewriteRule ^([^/]+)/?$ index.php?page=$1 [QSA,L]
+<Files "check_db.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "add_sample_data.php">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Clean URLs - Route everything through index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
 
 # Security headers
 <IfModule mod_headers.c>

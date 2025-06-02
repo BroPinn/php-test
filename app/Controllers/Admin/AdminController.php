@@ -62,7 +62,7 @@ abstract class AdminController extends BaseController {
                     return;
                 }
                 
-                $stmt = $pdo->prepare("SELECT * FROM admin_users WHERE id = ?");
+                $stmt = $pdo->prepare("SELECT * FROM tbl_admin WHERE adminID = ?");
                 $stmt->execute([$_SESSION['admin_id']]);
                 $this->adminUser = $stmt->fetch(\PDO::FETCH_ASSOC);
                 
@@ -175,34 +175,35 @@ abstract class AdminController extends BaseController {
                 return $this->getDefaultStats();
             }
             
-            // Create products table if it doesn't exist
-            $this->createProductsTable($pdo);
-            
             $stats = [];
             
-            // Total products
-            $stmt = $pdo->query("SELECT COUNT(*) FROM products");
-            $stats['total_products'] = $stmt->fetchColumn();
-            
-            // Total orders (check if table exists)
+            // Total products - use the correct table name
             try {
-                $stmt = $pdo->query("SELECT COUNT(*) FROM orders");
+                $stmt = $pdo->query("SELECT COUNT(*) FROM tbl_product");
+                $stats['total_products'] = $stmt->fetchColumn();
+            } catch (\Exception $e) {
+                $stats['total_products'] = 0;
+            }
+            
+            // Total orders
+            try {
+                $stmt = $pdo->query("SELECT COUNT(*) FROM tbl_order");
                 $stats['total_orders'] = $stmt->fetchColumn();
             } catch (\Exception $e) {
                 $stats['total_orders'] = 0;
             }
             
-            // Total customers (check if table exists)
+            // Total customers
             try {
-                $stmt = $pdo->query("SELECT COUNT(*) FROM customers");
+                $stmt = $pdo->query("SELECT COUNT(*) FROM tbl_customer");
                 $stats['total_customers'] = $stmt->fetchColumn();
             } catch (\Exception $e) {
                 $stats['total_customers'] = 0;
             }
             
-            // Revenue today (if orders table exists)
+            // Revenue today
             try {
-                $stmt = $pdo->prepare("SELECT SUM(total_amount) FROM orders WHERE DATE(created_at) = CURDATE()");
+                $stmt = $pdo->prepare("SELECT SUM(total_amount) FROM tbl_order WHERE DATE(created_at) = CURDATE()");
                 $stmt->execute();
                 $stats['revenue_today'] = $stmt->fetchColumn() ?: 0;
             } catch (\Exception $e) {
@@ -211,7 +212,7 @@ abstract class AdminController extends BaseController {
             
             // Revenue this month
             try {
-                $stmt = $pdo->prepare("SELECT SUM(total_amount) FROM orders WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())");
+                $stmt = $pdo->prepare("SELECT SUM(total_amount) FROM tbl_order WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())");
                 $stmt->execute();
                 $stats['revenue_month'] = $stmt->fetchColumn() ?: 0;
             } catch (\Exception $e) {

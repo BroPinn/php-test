@@ -137,6 +137,9 @@
                         <a class="nav-link" href="/admin/products">
                             <i class="fas fa-box me-2"></i>Products
                         </a>
+                        <a class="nav-link" href="/admin/slider">
+                            <i class="fas fa-images me-2"></i>Slider
+                        </a>
                         <a class="nav-link" href="/admin/orders">
                             <i class="fas fa-shopping-cart me-2"></i>Orders
                         </a>

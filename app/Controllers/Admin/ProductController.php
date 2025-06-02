@@ -20,16 +20,28 @@ class ProductController extends AdminController {
                 throw new Exception('Database connection failed');
             }
             
-            // Create products table if it doesn't exist
-            $this->createProductsTable($pdo);
-            
-            // Get all products
-            $stmt = $pdo->query("SELECT * FROM products ORDER BY created_at DESC");
+            // Get all products with category and brand information - sorted by ID
+            $sql = "SELECT p.*, c.catName as categoryName, b.brandName 
+                    FROM tbl_product p 
+                    LEFT JOIN tbl_category c ON p.categoryID = c.categoryID 
+                    LEFT JOIN tbl_brand b ON p.brandID = b.brandID 
+                    ORDER BY p.productID ASC";
+            $stmt = $pdo->query($sql);
             $products = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            // Get categories for the modal
+            $categoriesStmt = $pdo->query("SELECT * FROM tbl_category WHERE status = 1 ORDER BY catName");
+            $categories = $categoriesStmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            // Get brands for the modal
+            $brandsStmt = $pdo->query("SELECT * FROM tbl_brand WHERE status = 1 ORDER BY brandName");
+            $brands = $brandsStmt->fetchAll(\PDO::FETCH_ASSOC);
             
             $data = [
                 'title' => 'Product Management - OneStore Admin',
                 'products' => $products,
+                'categories' => $categories,
+                'brands' => $brands,
                 'admin_user' => $this->adminUser,
                 'success' => $_SESSION['flash_success'] ?? null,
                 'error' => $_SESSION['flash_error'] ?? null
@@ -68,19 +80,25 @@ class ProductController extends AdminController {
         $this->requirePermission('manage_products');
         
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /admin/products/create');
+            header('Location: /admin/products');
             exit;
         }
         
-        $name = trim($_POST['name'] ?? '');
+        $productName = trim($_POST['productName'] ?? '');
         $description = trim($_POST['description'] ?? '');
+        $shortDescription = trim($_POST['short_description'] ?? '');
         $price = floatval($_POST['price'] ?? 0);
-        $category_id = intval($_POST['category_id'] ?? 0);
-        $status = $_POST['status'] ?? 'active';
+        $salePrice = floatval($_POST['sale_price'] ?? 0);
+        $categoryID = intval($_POST['categoryID'] ?? 0);
+        $brandID = intval($_POST['brandID'] ?? 0);
+        $sku = trim($_POST['sku'] ?? '');
+        $stockQuantity = intval($_POST['stock_quantity'] ?? 0);
+        $status = intval($_POST['status'] ?? 1);
+        $featured = intval($_POST['featured'] ?? 0);
         
-        if (empty($name) || $price <= 0) {
-            $_SESSION['flash_error'] = 'Product name and valid price are required';
-            header('Location: /admin/products/create');
+        if (empty($productName) || $price <= 0 || !$categoryID) {
+            $_SESSION['flash_error'] = 'Product name, valid price, and category are required';
+            header('Location: /admin/products');
             exit;
         }
         
@@ -91,10 +109,24 @@ class ProductController extends AdminController {
                 throw new Exception('Database connection failed');
             }
             
-            $this->createProductsTable($pdo);
+            // Handle image upload
+            $imagePath = null;
+            if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === UPLOAD_ERR_OK) {
+                $uploadResult = $this->handleImageUpload($_FILES['product_image']);
+                if ($uploadResult['success']) {
+                    $imagePath = $uploadResult['filename'];
+                } else {
+                    $_SESSION['flash_error'] = 'Image upload failed: ' . $uploadResult['error'];
+                    header('Location: /admin/products');
+                    exit;
+                }
+            }
             
-            $stmt = $pdo->prepare("INSERT INTO products (name, description, price, category_id, status, created_at) VALUES (?, ?, ?, ?, ?, NOW())");
-            $stmt->execute([$name, $description, $price, $category_id, $status]);
+            // Generate slug from product name
+            $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $productName)));
+            
+            $stmt = $pdo->prepare("INSERT INTO tbl_product (categoryID, brandID, productName, slug, description, short_description, price, sale_price, sku, stock_quantity, image_path, status, featured, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+            $stmt->execute([$categoryID, $brandID ?: null, $productName, $slug, $description, $shortDescription, $price, $salePrice ?: null, $sku, $stockQuantity, $imagePath, $status, $featured]);
             
             $_SESSION['flash_success'] = 'Product created successfully';
             header('Location: /admin/products');
@@ -103,7 +135,7 @@ class ProductController extends AdminController {
         } catch (\Exception $e) {
             error_log("Product creation error: " . $e->getMessage());
             $_SESSION['flash_error'] = 'Error creating product: ' . $e->getMessage();
-            header('Location: /admin/products/create');
+            header('Location: /admin/products');
             exit;
         }
     }
@@ -160,24 +192,57 @@ class ProductController extends AdminController {
             exit;
         }
         
-        $id = intval($_POST['id'] ?? 0);
-        $name = trim($_POST['name'] ?? '');
+        $productID = intval($_POST['productID'] ?? 0);
+        $productName = trim($_POST['productName'] ?? '');
         $description = trim($_POST['description'] ?? '');
+        $shortDescription = trim($_POST['short_description'] ?? '');
         $price = floatval($_POST['price'] ?? 0);
-        $category_id = intval($_POST['category_id'] ?? 0);
-        $status = $_POST['status'] ?? 'active';
+        $salePrice = floatval($_POST['sale_price'] ?? 0);
+        $categoryID = intval($_POST['categoryID'] ?? 0);
+        $brandID = intval($_POST['brandID'] ?? 0);
+        $sku = trim($_POST['sku'] ?? '');
+        $stockQuantity = intval($_POST['stock_quantity'] ?? 0);
+        $status = intval($_POST['status'] ?? 1);
+        $featured = intval($_POST['featured'] ?? 0);
         
-        if (!$id || empty($name) || $price <= 0) {
+        if (!$productID || empty($productName) || $price <= 0 || !$categoryID) {
             $_SESSION['flash_error'] = 'Invalid product data';
-            header('Location: /admin/products/edit?id=' . $id);
+            header('Location: /admin/products');
             exit;
         }
         
         try {
             $pdo = $this->connectDatabase();
             
-            $stmt = $pdo->prepare("UPDATE products SET name = ?, description = ?, price = ?, category_id = ?, status = ?, updated_at = NOW() WHERE id = ?");
-            $stmt->execute([$name, $description, $price, $category_id, $status, $id]);
+            // Get current product data
+            $stmt = $pdo->prepare("SELECT image_path FROM tbl_product WHERE productID = ?");
+            $stmt->execute([$productID]);
+            $currentProduct = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            $imagePath = $currentProduct['image_path'] ?? null;
+            
+            // Handle image upload
+            if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === UPLOAD_ERR_OK) {
+                // Delete old image if it exists
+                if ($imagePath && file_exists("public/uploads/products/$imagePath")) {
+                    unlink("public/uploads/products/$imagePath");
+                }
+                
+                $uploadResult = $this->handleImageUpload($_FILES['product_image']);
+                if ($uploadResult['success']) {
+                    $imagePath = $uploadResult['filename'];
+                } else {
+                    $_SESSION['flash_error'] = 'Image upload failed: ' . $uploadResult['error'];
+                    header('Location: /admin/products');
+                    exit;
+                }
+            }
+            
+            // Generate slug from product name
+            $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $productName)));
+            
+            $stmt = $pdo->prepare("UPDATE tbl_product SET categoryID = ?, brandID = ?, productName = ?, slug = ?, description = ?, short_description = ?, price = ?, sale_price = ?, sku = ?, stock_quantity = ?, image_path = ?, status = ?, featured = ?, updated_at = NOW() WHERE productID = ?");
+            $stmt->execute([$categoryID, $brandID ?: null, $productName, $slug, $description, $shortDescription, $price, $salePrice ?: null, $sku, $stockQuantity, $imagePath, $status, $featured, $productID]);
             
             $_SESSION['flash_success'] = 'Product updated successfully';
             header('Location: /admin/products');
@@ -185,8 +250,8 @@ class ProductController extends AdminController {
             
         } catch (\Exception $e) {
             error_log("Product update error: " . $e->getMessage());
-            $_SESSION['flash_error'] = 'Error updating product';
-            header('Location: /admin/products/edit?id=' . $id);
+            $_SESSION['flash_error'] = 'Error updating product: ' . $e->getMessage();
+            header('Location: /admin/products');
             exit;
         }
     }
@@ -194,9 +259,9 @@ class ProductController extends AdminController {
     public function delete() {
         $this->requirePermission('manage_products');
         
-        $id = intval($_GET['id'] ?? 0);
+        $productID = intval($_GET['id'] ?? 0);
         
-        if (!$id) {
+        if (!$productID) {
             $_SESSION['flash_error'] = 'Product not found';
             header('Location: /admin/products');
             exit;
@@ -205,8 +270,8 @@ class ProductController extends AdminController {
         try {
             $pdo = $this->connectDatabase();
             
-            $stmt = $pdo->prepare("DELETE FROM products WHERE id = ?");
-            $stmt->execute([$id]);
+            $stmt = $pdo->prepare("DELETE FROM tbl_product WHERE productID = ?");
+            $stmt->execute([$productID]);
             
             $_SESSION['flash_success'] = 'Product deleted successfully';
             header('Location: /admin/products');
@@ -214,9 +279,85 @@ class ProductController extends AdminController {
             
         } catch (\Exception $e) {
             error_log("Product deletion error: " . $e->getMessage());
-            $_SESSION['flash_error'] = 'Error deleting product';
+            $_SESSION['flash_error'] = 'Error deleting product: ' . $e->getMessage();
             header('Location: /admin/products');
             exit;
+        }
+    }
+    
+    public function get() {
+        $this->requirePermission('manage_products');
+        
+        $productID = intval($_GET['id'] ?? 0);
+        
+        if (!$productID) {
+            http_response_code(404);
+            echo json_encode(['error' => 'Product not found']);
+            exit;
+        }
+        
+        try {
+            $pdo = $this->connectDatabase();
+            
+            $stmt = $pdo->prepare("SELECT * FROM tbl_product WHERE productID = ?");
+            $stmt->execute([$productID]);
+            $product = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            if (!$product) {
+                http_response_code(404);
+                echo json_encode(['error' => 'Product not found']);
+                exit;
+            }
+            
+            header('Content-Type: application/json');
+            echo json_encode($product);
+            exit;
+            
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Database error']);
+            exit;
+        }
+    }
+    
+    /**
+     * Handle image upload
+     */
+    private function handleImageUpload($file) {
+        $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $maxSize = 5 * 1024 * 1024; // 5MB
+        
+        // Check if file was uploaded
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            return ['success' => false, 'error' => 'File upload error'];
+        }
+        
+        // Check file size
+        if ($file['size'] > $maxSize) {
+            return ['success' => false, 'error' => 'File size too large (max 5MB)'];
+        }
+        
+        // Check file type
+        $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($fileExtension, $allowedTypes)) {
+            return ['success' => false, 'error' => 'Invalid file type. Allowed: ' . implode(', ', $allowedTypes)];
+        }
+        
+        // Create upload directory if it doesn't exist
+        $uploadDir = 'public/uploads/products/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        // Generate unique filename
+        $filename = uniqid() . '_' . time() . '.' . $fileExtension;
+        $uploadPath = $uploadDir . $filename;
+        
+        // Move uploaded file
+        if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
+            return ['success' => true, 'filename' => $filename];
+        } else {
+            return ['success' => false, 'error' => 'Failed to move uploaded file'];
         }
     }
     

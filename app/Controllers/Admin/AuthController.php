@@ -71,25 +71,22 @@ class AuthController extends BaseController {
                 throw new \Exception('Database connection failed');
             }
             
-            // Check if admin_users table exists, if not create it
-            $this->createAdminTable($pdo);
-            
-            $stmt = $pdo->prepare("SELECT * FROM admin_users WHERE username = ? AND status = 'active'");
+            $stmt = $pdo->prepare("SELECT * FROM tbl_admin WHERE username = ? AND status = 1");
             $stmt->execute([$username]);
             $admin = $stmt->fetch(\PDO::FETCH_ASSOC);
             
             if ($admin && password_verify($password, $admin['password'])) {
                 // Login successful
                 $_SESSION['admin_logged_in'] = true;
-                $_SESSION['admin_id'] = $admin['id'];
+                $_SESSION['admin_id'] = $admin['adminID'];
                 $_SESSION['admin_username'] = $admin['username'];
                 $_SESSION['admin_last_activity'] = time();
                 
                 // Update last login
-                $stmt = $pdo->prepare("UPDATE admin_users SET last_login = NOW() WHERE id = ?");
-                $stmt->execute([$admin['id']]);
+                $stmt = $pdo->prepare("UPDATE tbl_admin SET last_login = NOW() WHERE adminID = ?");
+                $stmt->execute([$admin['adminID']]);
                 
-                $_SESSION['flash_success'] = 'Welcome back, ' . $admin['name'];
+                $_SESSION['flash_success'] = 'Welcome back, ' . ($admin['firstName'] ?? 'Administrator');
                 header('Location: /admin/dashboard');
                 exit;
                 

@@ -14,6 +14,7 @@ use App\Controllers\Client\HomeController;
 use App\Controllers\Admin\DashboardController;
 use App\Controllers\Admin\AuthController;
 use App\Controllers\Admin\ProductController;
+use App\Controllers\Admin\SliderController;
 use App\Helpers\Helper;
 
 try {
@@ -64,6 +65,11 @@ try {
                 }
                 break;
                 
+            case '/products/store':
+                $controller = new ProductController();
+                $controller->store();
+                break;
+                
             case '/products/edit':
                 $controller = new ProductController();
                 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -73,9 +79,45 @@ try {
                 }
                 break;
                 
+            case '/products/update':
+                $controller = new ProductController();
+                $controller->update();
+                break;
+                
             case '/products/delete':
                 $controller = new ProductController();
                 $controller->delete();
+                break;
+                
+            case '/products/get':
+                $controller = new ProductController();
+                $controller->get();
+                break;
+                
+            // Slider routes
+            case '/slider':
+                $controller = new SliderController();
+                $controller->index();
+                break;
+                
+            case '/slider/store':
+                $controller = new SliderController();
+                $controller->store();
+                break;
+                
+            case '/slider/update':
+                $controller = new SliderController();
+                $controller->update();
+                break;
+                
+            case '/slider/delete':
+                $controller = new SliderController();
+                $controller->delete();
+                break;
+                
+            case '/slider/get':
+                $controller = new SliderController();
+                $controller->get();
                 break;
                 
             default:
@@ -112,6 +154,19 @@ try {
                 
             case '/contact':
                 $controller->contact();
+                break;
+                
+            // AJAX API endpoints
+            case '/api/products':
+                $controller->getProducts();
+                break;
+                
+            case '/api/categories':
+                $controller->getCategories();
+                break;
+                
+            case '/api/sliders':
+                $controller->getSliders();
                 break;
                 
             default:

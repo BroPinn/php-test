@@ -1,8 +1,7 @@
 <?php
 namespace App\Controllers\Client;
 
-use App\Models\Product;
-use App\Models\Slider;
+use Exception;
 
 /**
  * Home Controller
@@ -10,26 +9,276 @@ use App\Models\Slider;
  */
 class HomeController extends ClientController {
     
-    private $productModel;
-    private $sliderModel;
-    
     public function __construct() {
         parent::__construct();
-        $this->productModel = new Product();
-        // $this->sliderModel = new Slider(); // Will be created later
+    }
+    
+    /**
+     * Connect to database
+     */
+    private function connectDatabase() {
+        try {
+            $pdo = new \PDO('mysql:host=localhost;dbname=onestore_db;charset=utf8mb4', 'root', '');
+            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            return $pdo;
+        } catch (\Exception $e) {
+            error_log("Database connection error: " . $e->getMessage());
+            return null;
+        }
     }
     
     /**
      * Display home page
      */
     public function home() {
-        $this->setTitle('Welcome');
+        $this->setTitle('Welcome to OneStore');
         $this->setMeta('OneStore - Your favorite online shopping destination');
         
-        $this->view('pages.home', [
-            'message' => 'Your new PHP application is working!',
-            'featured_products' => []
-        ]);
+        try {
+            $pdo = $this->connectDatabase();
+            
+            // Get featured products
+            $productsStmt = $pdo->query("SELECT p.*, c.catName as categoryName, b.brandName 
+                                        FROM tbl_product p 
+                                        LEFT JOIN tbl_category c ON p.categoryID = c.categoryID 
+                                        LEFT JOIN tbl_brand b ON p.brandID = b.brandID 
+                                        WHERE p.status = 1 AND p.featured = 1 
+                                        ORDER BY p.productID DESC LIMIT 8");
+            $featuredProducts = $productsStmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            // Get active sliders
+            $slidersStmt = $pdo->query("SELECT * FROM tbl_slider WHERE status = 1 ORDER BY position ASC");
+            $sliders = $slidersStmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            // Get categories for navigation
+            $categoriesStmt = $pdo->query("SELECT * FROM tbl_category WHERE status = 1 ORDER BY catName");
+            $categories = $categoriesStmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            $this->view('pages.home', [
+                'featured_products' => $featuredProducts,
+                'sliders' => $sliders,
+                'categories' => $categories
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log("Homepage error: " . $e->getMessage());
+            $this->view('pages.home', [
+                'featured_products' => [],
+                'sliders' => [],
+                'categories' => [],
+                'error' => 'Unable to load homepage content. Please try again later.'
+            ]);
+        }
+    }
+    
+    /**
+     * Display shop page with products and filters
+     */
+    public function shop() {
+        $this->setTitle('Shop');
+        $this->setMeta('Browse our collection of products');
+        
+        try {
+            $pdo = $this->connectDatabase();
+            
+            // Get filter parameters
+            $categoryID = $_GET['category'] ?? null;
+            $brandID = $_GET['brand'] ?? null;
+            $search = $_GET['search'] ?? null;
+            $sortBy = $_GET['sort'] ?? 'newest';
+            $page = max(1, intval($_GET['page'] ?? 1));
+            $limit = 12;
+            $offset = ($page - 1) * $limit;
+            
+            // Build query
+            $where = ["p.status = 1"];
+            $params = [];
+            
+            if ($categoryID) {
+                $where[] = "p.categoryID = ?";
+                $params[] = $categoryID;
+            }
+            
+            if ($brandID) {
+                $where[] = "p.brandID = ?";
+                $params[] = $brandID;
+            }
+            
+            if ($search) {
+                $where[] = "(p.productName LIKE ? OR p.description LIKE ?)";
+                $params[] = "%$search%";
+                $params[] = "%$search%";
+            }
+            
+            $whereClause = implode(' AND ', $where);
+            
+            // Sort options
+            $orderBy = match($sortBy) {
+                'price_low' => 'p.price ASC',
+                'price_high' => 'p.price DESC',
+                'name' => 'p.productName ASC',
+                'newest' => 'p.created_at DESC',
+                default => 'p.productID DESC'
+            };
+            
+            // Get products
+            $sql = "SELECT p.*, c.catName as categoryName, b.brandName 
+                    FROM tbl_product p 
+                    LEFT JOIN tbl_category c ON p.categoryID = c.categoryID 
+                    LEFT JOIN tbl_brand b ON p.brandID = b.brandID 
+                    WHERE $whereClause 
+                    ORDER BY $orderBy 
+                    LIMIT $limit OFFSET $offset";
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $products = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            // Get total count for pagination
+            $countSql = "SELECT COUNT(*) FROM tbl_product p WHERE $whereClause";
+            $countStmt = $pdo->prepare($countSql);
+            $countStmt->execute($params);
+            $totalProducts = $countStmt->fetchColumn();
+            $totalPages = ceil($totalProducts / $limit);
+            
+            // Get categories for filter
+            $categoriesStmt = $pdo->query("SELECT * FROM tbl_category WHERE status = 1 ORDER BY catName");
+            $categories = $categoriesStmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            // Get brands for filter
+            $brandsStmt = $pdo->query("SELECT * FROM tbl_brand WHERE status = 1 ORDER BY brandName");
+            $brands = $brandsStmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            $this->view('pages.shop', [
+                'products' => $products,
+                'categories' => $categories,
+                'brands' => $brands,
+                'currentPage' => $page,
+                'totalPages' => $totalPages,
+                'totalProducts' => $totalProducts,
+                'filters' => [
+                    'category' => $categoryID,
+                    'brand' => $brandID,
+                    'search' => $search,
+                    'sort' => $sortBy
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log("Shop page error: " . $e->getMessage());
+            $this->view('pages.shop', [
+                'products' => [],
+                'categories' => [],
+                'brands' => [],
+                'error' => 'Unable to load shop content. Please try again later.'
+            ]);
+        }
+    }
+    
+    /**
+     * AJAX endpoint for getting products
+     */
+    public function getProducts() {
+        header('Content-Type: application/json');
+        
+        try {
+            $pdo = $this->connectDatabase();
+            
+            $categoryID = $_GET['category'] ?? null;
+            $brandID = $_GET['brand'] ?? null;
+            $featured = $_GET['featured'] ?? null;
+            $limit = min(50, intval($_GET['limit'] ?? 12));
+            
+            $where = ["p.status = 1"];
+            $params = [];
+            
+            if ($categoryID) {
+                $where[] = "p.categoryID = ?";
+                $params[] = $categoryID;
+            }
+            
+            if ($brandID) {
+                $where[] = "p.brandID = ?";
+                $params[] = $brandID;
+            }
+            
+            if ($featured) {
+                $where[] = "p.featured = 1";
+            }
+            
+            $whereClause = implode(' AND ', $where);
+            
+            $sql = "SELECT p.*, c.catName as categoryName, b.brandName 
+                    FROM tbl_product p 
+                    LEFT JOIN tbl_category c ON p.categoryID = c.categoryID 
+                    LEFT JOIN tbl_brand b ON p.brandID = b.brandID 
+                    WHERE $whereClause 
+                    ORDER BY p.productID DESC 
+                    LIMIT $limit";
+            
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $products = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            echo json_encode([
+                'success' => true,
+                'products' => $products,
+                'count' => count($products)
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log("Get products API error: " . $e->getMessage());
+            echo json_encode(['error' => 'Unable to load products']);
+        }
+        exit;
+    }
+    
+    /**
+     * AJAX endpoint for getting categories
+     */
+    public function getCategories() {
+        header('Content-Type: application/json');
+        
+        try {
+            $pdo = $this->connectDatabase();
+            
+            $stmt = $pdo->query("SELECT * FROM tbl_category WHERE status = 1 ORDER BY catName");
+            $categories = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            echo json_encode([
+                'success' => true,
+                'categories' => $categories
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log("Get categories API error: " . $e->getMessage());
+            echo json_encode(['error' => 'Unable to load categories']);
+        }
+        exit;
+    }
+    
+    /**
+     * AJAX endpoint for getting sliders
+     */
+    public function getSliders() {
+        header('Content-Type: application/json');
+        
+        try {
+            $pdo = $this->connectDatabase();
+            
+            $stmt = $pdo->query("SELECT * FROM tbl_slider WHERE status = 1 ORDER BY position ASC");
+            $sliders = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            
+            echo json_encode([
+                'success' => true,
+                'sliders' => $sliders
+            ]);
+            
+        } catch (\Exception $e) {
+            error_log("Get sliders API error: " . $e->getMessage());
+            echo json_encode(['error' => 'Unable to load sliders']);
+        }
+        exit;
     }
     
     /**
@@ -41,19 +290,6 @@ class HomeController extends ClientController {
         $this->addBreadcrumb('About');
         
         $this->view('pages.about');
-    }
-    
-    /**
-     * Display shop page
-     */
-    public function shop() {
-        $this->setTitle('Shop');
-        $this->setMeta('Browse our collection of products');
-        $this->addBreadcrumb('Shop');
-        
-        $this->view('pages.shop', [
-            'products' => []
-        ]);
     }
     
     /**
@@ -118,85 +354,6 @@ class HomeController extends ClientController {
         $this->addBreadcrumb('Contact');
         
         $this->view('pages.contact');
-    }
-    
-    /**
-     * Display homepage
-     */
-    public function index() {
-        // Set page metadata
-        $this->setTitle('Welcome to OneStore');
-        $this->setMeta('OneStore - Your trusted e-commerce partner offering quality products at best prices', 'ecommerce, shopping, online store, products');
-        
-        try {
-            // Get featured products
-            $featuredProducts = $this->productModel->getFeatured(8);
-            
-            // Get sliders (placeholder for now)
-            $sliders = [
-                [
-                    'title' => 'Welcome to OneStore',
-                    'subtitle' => 'Best Products at Best Prices',
-                    'image' => 'slider/slider1.jpg',
-                    'link_url' => '/shop',
-                    'button_text' => 'Shop Now'
-                ],
-                [
-                    'title' => 'New Collection',
-                    'subtitle' => 'Discover Latest Trends',
-                    'image' => 'slider/slider2.jpg',
-                    'link_url' => '/shop',
-                    'button_text' => 'Explore'
-                ]
-            ];
-            
-            // Render the view
-            $this->view('pages.home', [
-                'featured_products' => $featuredProducts,
-                'sliders' => $sliders,
-                'page_type' => 'homepage'
-            ]);
-            
-        } catch (\Exception $e) {
-            // Log error and show fallback
-            error_log("Homepage error: " . $e->getMessage());
-            
-            $this->view('pages.home', [
-                'featured_products' => [],
-                'sliders' => [],
-                'error' => 'Unable to load homepage content. Please try again later.'
-            ]);
-        }
-    }
-    
-    /**
-     * Handle AJAX requests for featured products
-     */
-    public function ajaxFeaturedProducts() {
-        if (!$this->isAjax()) {
-            $this->json(['error' => 'Invalid request'], 400);
-        }
-        
-        try {
-            $limit = $this->getInput('limit', 8);
-            $category = $this->getInput('category');
-            
-            if ($category) {
-                $products = $this->productModel->getByCategory($category, $limit);
-            } else {
-                $products = $this->productModel->getFeatured($limit);
-            }
-            
-            $this->json([
-                'success' => true,
-                'products' => $products,
-                'count' => count($products)
-            ]);
-            
-        } catch (\Exception $e) {
-            error_log("AJAX featured products error: " . $e->getMessage());
-            $this->json(['error' => 'Unable to load products'], 500);
-        }
     }
 }
 ?> 
