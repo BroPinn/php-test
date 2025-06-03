@@ -113,13 +113,20 @@ abstract class AdminController extends BaseController {
             return false;
         }
         
-        // Simple role-based check (can be enhanced)
+        // Get admin role with default fallback
         $adminRole = $this->adminUser['role'] ?? 'admin';
+        
+        // Super admin has all permissions
+        if ($adminRole === 'super_admin') {
+            return true;
+        }
         
         switch ($permission) {
             case 'manage_products':
             case 'manage_orders':
             case 'manage_customers':
+            case 'manage_categories':
+            case 'manage_brands':
                 return in_array($adminRole, ['admin', 'manager']);
                 
             case 'manage_users':
@@ -127,7 +134,7 @@ abstract class AdminController extends BaseController {
                 return $adminRole === 'admin';
                 
             default:
-                return $adminRole === 'admin';
+                return in_array($adminRole, ['admin', 'super_admin']);
         }
     }
     
@@ -201,9 +208,27 @@ abstract class AdminController extends BaseController {
                 $stats['total_customers'] = 0;
             }
             
+            // Total revenue (all paid orders)
+            try {
+                $stmt = $pdo->prepare("SELECT SUM(total_amount) FROM tbl_order WHERE payment_status = 'paid'");
+                $stmt->execute();
+                $stats['total_revenue'] = $stmt->fetchColumn() ?: 0;
+            } catch (\Exception $e) {
+                $stats['total_revenue'] = 0;
+            }
+            
+            // Average order value (paid orders only)
+            try {
+                $stmt = $pdo->prepare("SELECT AVG(total_amount) FROM tbl_order WHERE payment_status = 'paid'");
+                $stmt->execute();
+                $stats['avg_order_value'] = $stmt->fetchColumn() ?: 0;
+            } catch (\Exception $e) {
+                $stats['avg_order_value'] = 0;
+            }
+            
             // Revenue today
             try {
-                $stmt = $pdo->prepare("SELECT SUM(total_amount) FROM tbl_order WHERE DATE(created_at) = CURDATE()");
+                $stmt = $pdo->prepare("SELECT SUM(total_amount) FROM tbl_order WHERE DATE(created_at) = CURDATE() AND payment_status = 'paid'");
                 $stmt->execute();
                 $stats['revenue_today'] = $stmt->fetchColumn() ?: 0;
             } catch (\Exception $e) {
@@ -212,11 +237,25 @@ abstract class AdminController extends BaseController {
             
             // Revenue this month
             try {
-                $stmt = $pdo->prepare("SELECT SUM(total_amount) FROM tbl_order WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())");
+                $stmt = $pdo->prepare("SELECT SUM(total_amount) FROM tbl_order WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE()) AND payment_status = 'paid'");
                 $stmt->execute();
                 $stats['revenue_month'] = $stmt->fetchColumn() ?: 0;
             } catch (\Exception $e) {
                 $stats['revenue_month'] = 0;
+            }
+            
+            // Recent orders for dashboard
+            try {
+                $stmt = $pdo->prepare("SELECT o.orderID, o.total_amount, o.order_status as status, o.created_at,
+                                              CONCAT(c.firstName, ' ', c.lastName) as customer_name
+                                       FROM tbl_order o
+                                       LEFT JOIN tbl_customer c ON o.customerID = c.customerID
+                                       ORDER BY o.created_at DESC
+                                       LIMIT 5");
+                $stmt->execute();
+                $stats['recent_orders'] = $stmt->fetchAll();
+            } catch (\Exception $e) {
+                $stats['recent_orders'] = [];
             }
             
             return $stats;
@@ -272,8 +311,11 @@ abstract class AdminController extends BaseController {
             'total_products' => 0,
             'total_orders' => 0,
             'total_customers' => 0,
+            'total_revenue' => 0,
+            'avg_order_value' => 0,
             'revenue_today' => 0,
-            'revenue_month' => 0
+            'revenue_month' => 0,
+            'recent_orders' => []
         ];
     }
     
@@ -282,8 +324,7 @@ abstract class AdminController extends BaseController {
      */
     protected function logActivity($action, $details = '') {
         try {
-            require_once __DIR__ . '/../../../database.php';
-            global $pdo;
+            $pdo = connectToDatabase();
             
             // Check if admin_activity_log table exists, if not create it
             $stmt = $pdo->prepare("

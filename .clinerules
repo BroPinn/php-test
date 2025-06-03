@@ -1,0 +1,454 @@
+# OneStore Project Intelligence (.clinerules)
+
+## Critical Project Paths
+
+### Development Environment
+- **Primary Location**: `C:\laragon\www\php-test` (Windows/Laragon setup)
+- **Access URLs**: 
+  - Frontend: `http://localhost:8000` or `http://php-test.test`
+  - Admin: `http://localhost:8000/admin`
+- **Database**: `onestore_db` (MySQL, default root user, no password)
+
+### Key Entry Points
+- **Main Application**: `index.php` (customer-facing routes)
+- **Admin Panel**: `public/admin.php` (admin routes)
+- **Database Config**: `database.php` and `config/app.php`
+- **Migration Tools**: `migrate_structure.php`, `cleanup_old_structure.php`
+- **Security Tools**: `hash_passwords.php`, `create_admin.php`
+
+## Project Architecture Intelligence
+
+### MVC Structure Pattern
+```
+app/
+├── Controllers/{Admin|Client}/  # Separate admin and client logic
+├── Models/                      # Extend BaseModel for consistent DB operations
+├── Views/{Admin|Client}/        # Separate templating for different user types
+├── Services/                    # Business logic layer (growing)
+└── Helpers/                     # Utility functions (includes PasswordHelper)
+```
+
+### Database Patterns
+- **Table Prefix**: All tables use `tbl_` prefix (e.g., `tbl_product`, `tbl_admin`)
+- **Primary Keys**: Consistent naming: `productID`, `adminID`, `customerID`, etc.
+- **Authentication**: Admin uses `tbl_admin` table with username/hashed password
+- **Password Security**: All passwords stored as bcrypt hashes (60 chars, starts with $2y$)
+- **Sample Data**: Always present - 6 products, 4 customers, 4 orders
+
+### Code Patterns Discovered
+- **BaseModel**: All models extend this for common CRUD operations
+- **Controller Structure**: Controllers follow {Entity}Controller naming
+- **View Organization**: Layouts, components, and pages structure
+- **Clean URLs**: `.htaccess` handles routing to appropriate controllers
+- **Password Security**: PasswordHelper class for all password operations
+
+## User Preferences & Workflow
+
+### Documentation Appreciation
+- User values comprehensive documentation (README, QUICK_START, MIGRATION_GUIDE all present)
+- Likes having migration tools and setup scripts available
+- Appreciates clear file organization and separation of concerns
+
+### Development Style
+- Prefers clean, professional architecture (evidenced by MVC refactoring)
+- Values working sample data for testing
+- Likes having both development tools and production-ready structure
+- Security-conscious: implemented proper password hashing when asked
+
+## Critical Implementation Details
+
+### Authentication System
+- **Admin Login**: `admin` / `admin123` (default credentials - password is hashed in DB)
+- **Session Management**: PHP sessions, stored in `$_SESSION['admin_logged_in']`
+- **Access Control**: Middleware checks in admin controllers
+- **Password Security**: Uses PasswordHelper for all password operations
+
+### Password Security Implementation
+- **Hashing**: Uses PHP's `password_hash()` with `PASSWORD_DEFAULT` (bcrypt)
+- **Verification**: Uses `password_verify()` for authentication
+- **Strength Validation**: Minimum 8 chars, uppercase, lowercase, number required
+- **Rehashing**: Automatic password rehashing when algorithms upgrade
+- **Helper Class**: `App\Helpers\PasswordHelper` for all password operations
+
+### File Upload System
+- **Path**: `public/uploads/{products|slider}/`
+- **Database Storage**: Store full path including subdirectory (e.g., `products/filename.jpg`)
+- **URL Generation**: Helper::upload() creates `/uploads/products/filename.jpg`
+- **Validation**: Image types only (jpg, jpeg, png, gif, webp)
+- **Size Limit**: 5MB default
+- **Security**: File type validation, secure naming
+- **Important**: Controllers must return full path including subdirectory to database
+
+### Database Connection Pattern
+```php
+// Singleton pattern used
+$pdo = connectToDatabase(); // From database.php
+// All models use prepared statements for security
+```
+
+## Common Gotchas & Solutions
+
+### Database Issues
+- **Table Names**: Remember `tbl_` prefix when writing queries
+- **Connection**: Check MySQL service in Laragon if connection fails
+- **Sample Data**: If dashboard shows zeros, data may need to be reloaded
+- **Password Storage**: Always use PasswordHelper::hash() for new passwords
+
+### Password Security Issues
+- **Plaintext Passwords**: Run `hash_passwords.php` to convert existing plaintext
+- **New Admin Users**: Use `create_admin.php` for new admin accounts
+- **Password Verification**: Always use PasswordHelper::verify() not direct comparison
+- **Strength Requirements**: Enforce strong passwords with PasswordHelper::validateStrength()
+
+### File Path Issues
+- **Public Assets**: Assets must be in `public/` directory for web access
+- **Upload Permissions**: Ensure write permissions on `public/uploads/`
+- **Clean URLs**: Requires Apache mod_rewrite enabled
+
+### Development Environment
+- **Laragon Preferred**: Works best with Laragon on Windows
+- **Port Conflicts**: May need to change from 8000 if port busy
+- **Database Reset**: Use `setup.php` to reinitialize if needed
+
+## Proven Workflows
+
+### Adding New Features
+1. **Model First**: Create/extend model in `app/Models/`
+2. **Controller Logic**: Add controller in appropriate `Admin/` or `Client/` directory
+3. **Views**: Create templates in matching `Views/` structure
+4. **Routes**: Update routing in `index.php` or `admin.php`
+
+### Password Management Workflow
+1. **Hash Existing**: Run `hash_passwords.php` once to secure existing passwords
+2. **Create New Users**: Use `create_admin.php` for new admin accounts
+3. **Code Integration**: Use PasswordHelper class for all password operations
+4. **Strength Validation**: Implement password strength requirements in forms
+
+### Debugging Process
+1. **Check Database**: Verify connection and table existence
+2. **Review Logs**: PHP error logs for detailed error information
+3. **Test Sample Data**: Ensure sample data loads correctly
+4. **Verify Permissions**: Check file/directory permissions
+5. **Password Issues**: Check if passwords are properly hashed (60 chars, starts with $2y$)
+
+### Migration Pattern
+- **Always Backup**: Project includes backup reminders in guides
+- **Test Migration**: Use provided migration scripts before manual changes
+- **Verify Results**: Check that statistics display correctly after changes
+
+## Security Tools Available
+
+### Password Security Scripts
+- **`hash_passwords.php`**: One-time script to convert plaintext passwords to hashed
+- **`create_admin.php`**: Web interface to create new admin users with proper hashing
+- **PasswordHelper Class**: Comprehensive password management utilities
+
+### Security Features Implemented
+- **Bcrypt Hashing**: Industry-standard password hashing
+- **Password Strength Validation**: Enforced complexity requirements
+- **Automatic Rehashing**: Updates hashes when algorithms improve
+- **Secure Comparison**: Timing-attack resistant string comparison
+- **Reset Tokens**: Secure password reset token generation
+
+## Project Evolution Context
+
+### Recent Refactoring Success
+- **From**: Legacy mixed structure with unclear separation
+- **To**: Professional MVC with clean admin/client separation
+- **Result**: Maintainable, scalable codebase ready for enhancement
+
+### Recent Security Enhancement
+- **From**: Plaintext passwords stored in database
+- **To**: Secure bcrypt password hashing with helper utilities
+- **Result**: Production-ready authentication security
+
+### Next Development Phase
+- **Focus Area**: Customer-facing features (cart, checkout, user accounts)
+- **Priority**: Payment integration and email notifications
+- **Architecture**: Service layer expansion for complex business logic
+
+This project represents a successful refactoring from legacy PHP to modern MVC architecture with proper security implementation. The user appreciates clean code, good documentation, and professional development practices. Always maintain the established patterns and leverage the comprehensive documentation and security tools when making changes.
+
+### File Upload Issues
+- **404 Errors**: Database paths must include subdirectory (`products/file.jpg` not just `file.jpg`)
+- **Controller Fix**: Return `'products/' . $filename` or `'slider/' . $filename` from upload handlers
+- **Migration**: Use fix scripts to update existing database records to include subdirectory paths
+
+## Critical Patterns & Context
+
+### Database Connection & Configuration
+- Database name: `onestore_db` (not `onestore_simple`)
+- Configuration files: `database.php` and `config/app.php`
+- Use prepared statements with proper error handling
+- Legacy compatibility maintained for existing code
+
+### Image Upload System Architecture
+- **Upload directories**: `public/uploads/products/` and `public/uploads/slider/`
+- **Database storage**: Paths stored as `products/filename.jpg` or `slider/filename.jpg` (includes subdirectory)
+- **URL generation**: Use `Helper::upload($path)` method for consistent URL construction
+- **File naming**: Controllers generate unique filenames with `uniqid() . '_' . time() . '.' . extension`
+
+### Image Upload Troubleshooting Pattern
+**CRITICAL**: When 404 errors occur for uploaded images:
+
+1. **Check file-database mismatch**: Database may reference different filenames than actual files
+2. **Verify actual files**: Use `dir public\uploads\products` and `dir public\uploads\slider` 
+3. **Check database entries**: Query `tbl_product.image_path` and `tbl_slider.image` columns
+4. **Fix mismatches**: Update database to reference actual existing files
+5. **Test URLs**: Verify `/uploads/subdirectory/filename.jpg` is accessible
+6. **Check PHP upload limits**: Verify `upload_max_filesize` and `post_max_size` settings
+
+**Common causes**:
+- Database updated with new filenames but files saved with different names
+- Upload process interrupted leaving orphaned files
+- Manual file manipulation without database updates
+- **PHP upload limits too small** (default 2MB vs application expecting 5MB+)
+
+**PHP Configuration Fix**:
+- Use `php -c php-dev.ini -S localhost:8000 -t public` for development
+- The `php-dev.ini` file sets `upload_max_filesize = 10M` and `post_max_size = 12M`
+- Default PHP settings often have 2MB limit which causes silent upload failures
+
+### MVC Structure Patterns
+- Controllers in `app/Controllers/Admin/` extend `AdminController`
+- Views in `app/Views/Admin/` use consistent naming
+- Helper methods in `app/Helpers/Helper.php` for common operations
+- All admin routes require authentication and permission checks
+
+### Security Implementation
+- Password hashing: `password_hash()` with `PASSWORD_DEFAULT`
+- Session management: Admin sessions in `$_SESSION['admin_id']`
+- CSRF protection: Helper methods available but not fully implemented
+- Input sanitization: `Helper::sanitize()` method handles null values for PHP 8+
+
+### Database Schema Evolution
+- **Critical tables**: tbl_product, tbl_slider, tbl_category, tbl_brand, tbl_customer, tbl_order
+- **Recent fixes**: Added `updated_at` column to tbl_slider
+- **Image columns**: `image_path` for products, `image` for sliders
+- **Status fields**: Use 1/0 for active/inactive states
+
+### Frontend Integration
+- Admin panel: Modern Bootstrap 5 with responsive design
+- Image previews: JavaScript handles file selection and preview
+- AJAX endpoints: `/admin/products/get` and `/admin/slider/get` for edit modals
+- URL construction: All views use `Helper::upload()` for image paths
+
+### Development Environment
+- **Server**: PHP built-in server on port 8000 (`php -S localhost:8000 -t public`)
+- **Document root**: `public/` directory for security
+- **Asset handling**: Helper methods detect CLI server vs production
+- **Hot reload**: Manual server restart required for major changes
+
+### Common User Workflow Issues
+- **Admin login**: Username `admin`, password `admin123`
+- **Image uploads**: Max 5MB, supports JPG, PNG, GIF, WebP
+- **File permissions**: Ensure upload directories are writable
+- **Database connection**: Verify credentials in database config
+
+### Refactoring Benefits Achieved
+- Clean MVC architecture from legacy procedural code
+- Professional admin interface replacing basic forms
+- Secure file upload system with proper validation
+- Responsive design working on all device sizes
+- Maintainable codebase with clear separation of concerns
+
+### Project Intelligence Notes
+- **Memory Bank**: Uses structured documentation in `memory-bank/` folder
+- **Progress tracking**: Detailed status in `progress.md`
+- **Migration tools**: Available for various setup scenarios
+- **Documentation quality**: Comprehensive guides and troubleshooting patterns
+
+This project demonstrates enterprise-level PHP development practices while maintaining simplicity for educational purposes.
+
+## Image Upload Architecture Pattern
+
+### Critical File Path Handling (LEARNED FROM CATEGORY BUG FIX)
+**Problem Pattern**: Controllers returning just filename without subdirectory prefix
+```php
+// ❌ WRONG - Causes 404 errors
+return ['success' => true, 'filename' => $filename];
+```
+
+**Solution Pattern**: Always include subdirectory in return path
+```php
+// ✅ CORRECT - Works with Helper::upload()
+return ['success' => true, 'filename' => 'subdirectory/' . $filename];
+```
+
+**Applied To**:
+- ✅ CategoryController: Fixed to return 'categories/' prefix
+- ✅ BrandController: Implemented correctly from start with 'brands/' prefix  
+- ✅ ProductController: Already correct with 'products/' prefix
+- ✅ SliderController: Already correct with 'slider/' prefix
+
+**Database Storage Consistency**:
+- Database stores: `categories/filename.jpg`, `brands/filename.jpg`, `products/filename.jpg`
+- URLs generated: `/uploads/categories/filename.jpg`, `/uploads/brands/filename.jpg`
+- Helper::upload() method handles path construction correctly
+
+## Admin Management Pattern (PERFECTED)
+
+### Standard Controller Structure
+```php
+class [Entity]Controller extends AdminController {
+    private $[entity]Model;
+    
+    public function index() {
+        $this->setAdminTitle('[Entity] Management');
+        $this->requirePermission('manage_[entities]');
+        // Statistics + listing with search/filter
+    }
+    
+    public function store() { /* Create with validation */ }
+    public function update() { /* Update with validation */ }
+    public function delete() { /* Soft delete with protection */ }
+    public function get() { /* AJAX data retrieval */ }
+    
+    private function handle[Image]Upload($file) {
+        // Return: ['success' => true, 'filename' => 'subdirectory/' . $filename]
+    }
+}
+```
+
+### Permission System Integration
+```php
+// In AdminController::checkPermission()
+case 'manage_products':
+case 'manage_orders':
+case 'manage_customers':
+case 'manage_categories':
+case 'manage_brands': // ← Added for brands
+    return in_array($adminRole, ['admin', 'manager']);
+```
+
+### Routing Pattern
+```php
+// In index.php admin routes section
+case '/[entities]':
+case '/[entities]/store':
+case '/[entities]/update':
+case '/[entities]/delete':
+case '/[entities]/get':
+    $controller = new [Entity]Controller();
+    $controller->[method]();
+    break;
+```
+
+## Database Schema Patterns
+
+### Standard Entity Table Structure
+- Primary Key: `[entity]ID` (auto-increment)
+- Name Field: `[entity]Name` (required, unique)
+- Slug: `slug` (auto-generated, URL-friendly)
+- Description: `description` (optional text)
+- Image/Logo: `image`/`logo` (stores subdirectory/filename)
+- Status: `status` (1=active, 0=inactive for soft delete)
+- Timestamps: `created_at`, `updated_at`
+
+### Model Base Pattern
+```php
+class [Entity] extends BaseModel {
+    protected $table = 'tbl_[entity]';
+    protected $primaryKey = '[entity]ID';
+    protected $fillable = ['[entity]Name', 'slug', 'description', 'image', 'status'];
+    
+    public function create[Entity]($data) { /* With slug generation */ }
+    public function update[Entity]($id, $data) { /* With slug update */ }
+    public function delete[Entity]($id) { /* Soft delete */ }
+}
+```
+
+## Admin UI Consistency
+
+### Modal-Based CRUD Interface
+- Statistics cards at top (4-column layout)
+- Search and filter controls
+- Data table with image previews
+- Modal forms for create/edit
+- AJAX form submission with JSON responses
+- Logo/image preview functionality
+
+### Navigation Integration
+Add to `app/Views/Admin/components/sidebar.php`:
+```php
+<li class="nav-item <?= Helper::urlIs('admin/[entities]') ? 'active' : '' ?>">
+    <a href="/admin/[entities]">
+        <i class="fas fa-[icon]"></i>
+        <p>[Entities]</p>
+    </a>
+</li>
+```
+
+## JavaScript Patterns
+
+### Standard Admin JS Structure
+```javascript
+// Modal management
+function openCreateModal() { /* Reset form, set create mode */ }
+function edit[Entity](id) { /* Fetch data, populate form, set edit mode */ }
+function delete[Entity](id) { /* Confirm dialog, submit delete */ }
+
+// Form handling
+document.getElementById('[entity]Form').addEventListener('submit', function(e) {
+    // AJAX submission with loading states and error handling
+});
+
+// Image preview
+document.getElementById('[image]').addEventListener('change', function(e) {
+    // File reader for image preview
+});
+```
+
+## Critical Success Factors
+
+### 1. Image Upload Path Consistency
+- ALWAYS return subdirectory prefix from upload handlers
+- Database stores full relative path (subdirectory/filename)
+- Helper::upload() constructs final URLs correctly
+
+### 2. Permission System Integration
+- Add new permissions to AdminController::checkPermission()
+- Use consistent permission naming: 'manage_[entities]'
+- Apply permissions to all controller methods
+
+### 3. Code Consistency
+- Follow exact same patterns as existing controllers
+- Use same variable naming conventions
+- Maintain consistent error handling and response formats
+
+### 4. Database Relationships
+- Soft delete to prevent orphaned records
+- Product count integration for statistics
+- Proper foreign key relationships
+
+## Business Logic Patterns
+
+### Delete Protection
+- Check for related records before deletion
+- Show helpful error messages
+- Provide guidance for data cleanup
+
+### Validation Rules
+- Unique name validation across create/update
+- File type and size validation for uploads
+- Required field validation with clear messages
+
+### Statistics Integration
+- Count active/inactive records
+- Track relationship statistics (product counts)
+- Display meaningful business metrics
+
+## Client-Side Integration Notes
+
+### Product Management Enhancement
+- Categories AND brands now both available in ProductController
+- Frontend shop filtering supports both category and brand filters
+- Consistent data structure for JavaScript integration
+
+### URL Structure Potential
+- SEO-friendly slugs ready for frontend routes
+- Brand pages: `/brand/[slug]`
+- Category pages: `/category/[slug]`
+- Consistent with existing URL patterns
+
+This pattern has been successfully applied to create the brand management system, resulting in a fully functional, secure, and consistent admin interface that integrates seamlessly with the existing OneStore architecture. 

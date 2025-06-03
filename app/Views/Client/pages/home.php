@@ -134,17 +134,14 @@
                     All Products
                 </button>
 
-                <button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter=".electronics">
-                    Electronics
-                </button>
-
-                <button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter=".clothing">
-                    Clothing
-                </button>
-
-                <button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter=".accessories">
-                    Accessories
-                </button>
+                <?php if (!empty($categories)): ?>
+                    <?php foreach ($categories as $category): ?>
+                    <button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" 
+                            data-filter=".<?= strtolower(Helper::sanitize($category['catName'])) ?>">
+                        <?= Helper::sanitize($category['catName']) ?>
+                    </button>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
 
             <div class="flex-w flex-c-m m-tb-10">
@@ -162,7 +159,17 @@
             </div>
         </div>
 
-        <div class="row isotope-grid">
+        <!-- Search -->
+        <div class="dis-none panel-search w-full p-t-10 p-b-15">
+            <div class="bor8 dis-flex p-l-15">
+                <button class="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04">
+                    <i class="zmdi zmdi-search"></i>
+                </button>
+                <input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search-product" placeholder="Search">
+            </div>
+        </div>
+
+        <div class="row isotope-grid" id="product-grid">
             <?php if (!empty($featured_products)): ?>
                 <?php foreach ($featured_products as $product): ?>
                 <div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item <?= strtolower($product['catName'] ?? 'general') ?>">
@@ -171,9 +178,13 @@
                         <div class="block2-pic hov-img0">
                             <img src="<?= Helper::upload($product['image_path'] ?: 'placeholder.jpg') ?>" alt="<?= Helper::sanitize($product['productName']) ?>">
 
-                            <a href="/product/<?= $product['productID'] ?>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04">
-                                Quick View
-                            </a>
+                            <button class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 add-to-cart-btn"
+                                    data-product-id="<?= $product['productID'] ?>"
+                                    data-product-name="<?= Helper::sanitize($product['productName']) ?>"
+                                    data-product-price="<?= $product['sale_price'] ?: $product['price'] ?>"
+                                    data-product-image="<?= Helper::upload($product['image_path'] ?: 'placeholder.jpg') ?>">
+                                Add to Cart
+                            </button>
                         </div>
 
                         <div class="block2-txt flex-w flex-t p-t-14">
@@ -183,9 +194,9 @@
                                 </a>
 
                                 <span class="stext-105 cl3">
-                                    <?= Helper::formatCurrency($product['price']) ?>
+                                    <?= Helper::formatCurrency($product['sale_price'] ?: $product['price']) ?>
                                     <?php if (!empty($product['sale_price']) && $product['sale_price'] < $product['price']): ?>
-                                        <span class="old-price"><?= Helper::formatCurrency($product['sale_price']) ?></span>
+                                        <span class="old-price text-muted text-decoration-line-through ms-2"><?= Helper::formatCurrency($product['price']) ?></span>
                                     <?php endif; ?>
                                 </span>
                             </div>
@@ -214,4 +225,15 @@
             </a>
         </div>
     </div>
-</section> 
+</section>
+
+<script src="<?= Helper::asset('js/product-filter.js') ?>"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize product filtering for home page
+    new ProductFilter({
+        gridId: 'product-grid',
+        enableLoadMore: false // Home page uses link to shop for more products
+    });
+});
+</script> 

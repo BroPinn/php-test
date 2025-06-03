@@ -8,6 +8,7 @@ namespace App\Models;
 class Slider extends BaseModel {
     protected $table = 'tbl_slider';
     protected $primaryKey = 'sliderID';
+    protected $timestamps = false; // Disable timestamps to prevent SQL errors
     
     protected $fillable = [
         'title',

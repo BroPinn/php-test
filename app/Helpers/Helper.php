@@ -33,6 +33,12 @@ class Helper {
         if (is_array($input)) {
             return array_map([self::class, 'sanitize'], $input);
         }
+        
+        // Handle null values to prevent PHP 8+ deprecation warnings
+        if ($input === null) {
+            return '';
+        }
+        
         return htmlspecialchars(strip_tags(trim($input)), ENT_QUOTES, 'UTF-8');
     }
     
@@ -79,6 +85,20 @@ class Helper {
             return $message;
         }
         $_SESSION['flash'][$key] = $message;
+    }
+    
+    /**
+     * Check if flash message exists
+     */
+    public static function hasFlash($key) {
+        return isset($_SESSION['flash'][$key]);
+    }
+    
+    /**
+     * Get flash message without removing it
+     */
+    public static function getFlash($key) {
+        return $_SESSION['flash'][$key] ?? null;
     }
     
     /**
@@ -187,37 +207,6 @@ class Helper {
             return '/uploads/' . ltrim($path, '/');
         }
         return APP_URL . '/public/uploads/' . ltrim($path, '/');
-    }
-}
-
-// Legacy function support for backward compatibility
-if (!function_exists('dd')) {
-    function dd($value) {
-        Helper::dd($value);
-    }
-}
-
-if (!function_exists('urlIs')) {
-    function urlIs($path) {
-        return Helper::urlIs($path);
-    }
-}
-
-if (!function_exists('sanitizeInput')) {
-    function sanitizeInput($input) {
-        return Helper::sanitize($input);
-    }
-}
-
-if (!function_exists('redirect')) {
-    function redirect($url) {
-        Helper::redirect($url);
-    }
-}
-
-if (!function_exists('formatCurrency')) {
-    function formatCurrency($amount) {
-        return Helper::formatCurrency($amount);
     }
 }
 ?> 

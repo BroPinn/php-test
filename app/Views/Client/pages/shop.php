@@ -12,8 +12,8 @@
                 <?php if (!empty($categories)): ?>
                     <?php foreach ($categories as $category): ?>
                     <button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" 
-                            data-filter=".<?= strtolower(Helper::sanitize($category['name'])) ?>">
-                        <?= Helper::sanitize($category['name']) ?>
+                            data-filter=".<?= strtolower(Helper::sanitize($category['catName'] ?? $category['name'] ?? '')) ?>">
+                        <?= Helper::sanitize($category['catName'] ?? $category['name'] ?? 'Unknown') ?>
                     </button>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -120,9 +120,13 @@
                             <img src="<?= Helper::upload($product['image_path'] ?: 'placeholder.jpg') ?>" 
                                  alt="<?= Helper::sanitize($product['productName']) ?>">
 
-                            <a href="/product/<?= $product['productID'] ?>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04">
-                                Quick View
-                            </a>
+                            <button class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 add-to-cart-btn"
+                                    data-product-id="<?= $product['productID'] ?>"
+                                    data-product-name="<?= Helper::sanitize($product['productName']) ?>"
+                                    data-product-price="<?= $product['sale_price'] ?: $product['price'] ?>"
+                                    data-product-image="<?= Helper::upload($product['image_path'] ?: 'placeholder.jpg') ?>">
+                                Add to Cart
+                            </button>
                         </div>
 
                         <div class="block2-txt flex-w flex-t p-t-14">
@@ -132,10 +136,10 @@
                                 </a>
 
                                 <span class="stext-105 cl3">
-                                    <?= Helper::formatCurrency($product['price']) ?>
+                                    <?= Helper::formatCurrency($product['sale_price'] ?: $product['price']) ?>
                                     <?php if (!empty($product['sale_price']) && $product['sale_price'] < $product['price']): ?>
-                                        <span class="old-price text-muted text-decoration-line-through">
-                                            <?= Helper::formatCurrency($product['sale_price']) ?>
+                                        <span class="old-price text-muted text-decoration-line-through ms-2">
+                                            <?= Helper::formatCurrency($product['price']) ?>
                                         </span>
                                     <?php endif; ?>
                                 </span>
@@ -166,6 +170,10 @@
         </div>
 
         <!-- Load more -->
+        <?php 
+        $per_page = $per_page ?? 12; // Default value if not set
+        $current_page = $current_page ?? $currentPage ?? 1; // Handle different variable names
+        ?>
         <?php if (!empty($products) && count($products) >= $per_page): ?>
         <div class="flex-c-m flex-w w-full p-t-45">
             <button id="load-more-btn" class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04" 
@@ -177,160 +185,14 @@
     </div>
 </div>
 
+<script src="<?= Helper::asset('js/product-filter.js') ?>"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const productGrid = document.getElementById('product-grid');
-    const loadMoreBtn = document.getElementById('load-more-btn');
-    
-    // Filter functionality
-    document.querySelectorAll('[data-filter]').forEach(button => {
-        button.addEventListener('click', function() {
-            const filter = this.getAttribute('data-filter');
-            filterProducts(filter);
-            
-            // Update active button
-            document.querySelectorAll('[data-filter]').forEach(btn => btn.classList.remove('how-active1'));
-            this.classList.add('how-active1');
-        });
+    // Initialize product filtering for shop page with load more functionality
+    new ProductFilter({
+        gridId: 'product-grid',
+        loadMoreBtnId: 'load-more-btn',
+        enableLoadMore: true
     });
-    
-    // Search functionality
-    const searchInput = document.querySelector('input[name="search-product"]');
-    if (searchInput) {
-        searchInput.addEventListener('input', debounce(function() {
-            searchProducts(this.value);
-        }, 300));
-    }
-    
-    // Load more functionality
-    if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', function() {
-            const page = this.getAttribute('data-page');
-            loadMoreProducts(page);
-        });
-    }
-    
-    // Wishlist functionality
-    document.querySelectorAll('.js-addwish-b2').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const productId = this.getAttribute('data-product-id');
-            addToWishlist(productId);
-        });
-    });
-    
-    function filterProducts(filter) {
-        const products = document.querySelectorAll('.isotope-item');
-        products.forEach(product => {
-            if (filter === '*' || product.classList.contains(filter.replace('.', ''))) {
-                product.style.display = 'block';
-            } else {
-                product.style.display = 'none';
-            }
-        });
-    }
-    
-    function searchProducts(query) {
-        if (query.length < 2) return;
-        
-        fetch('/shop/search', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({ query: query })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                updateProductGrid(data.products);
-            }
-        })
-        .catch(error => console.error('Search error:', error));
-    }
-    
-    function loadMoreProducts(page) {
-        fetch(`/shop/load-more?page=${page}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success && data.products.length > 0) {
-                appendProducts(data.products);
-                loadMoreBtn.setAttribute('data-page', parseInt(page) + 1);
-                
-                if (data.products.length < <?= $per_page ?>) {
-                    loadMoreBtn.style.display = 'none';
-                }
-            } else {
-                loadMoreBtn.style.display = 'none';
-            }
-        })
-        .catch(error => console.error('Load more error:', error));
-    }
-    
-    function addToWishlist(productId) {
-        fetch('/wishlist/add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            },
-            body: JSON.stringify({ product_id: productId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showNotification('Added to wishlist!', 'success');
-            } else {
-                showNotification(data.message || 'Failed to add to wishlist', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Wishlist error:', error);
-            showNotification('An error occurred', 'error');
-        });
-    }
-    
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-    
-    function updateProductGrid(products) {
-        // Implementation for updating product grid
-        // This would replace the current products with search results
-    }
-    
-    function appendProducts(products) {
-        // Implementation for appending more products
-        // This would add new products to the existing grid
-    }
-    
-    function showNotification(message, type) {
-        // Reuse the notification function from cart.php
-        const notification = document.createElement('div');
-        notification.className = `alert alert-${type === 'error' ? 'danger' : 'success'} alert-dismissible fade show position-fixed`;
-        notification.style.top = '20px';
-        notification.style.right = '20px';
-        notification.style.zIndex = '9999';
-        notification.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 5000);
-    }
 });
 </script> 

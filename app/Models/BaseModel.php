@@ -95,7 +95,10 @@ abstract class BaseModel {
             $sql = "INSERT INTO {$this->table} (" . implode(', ', $fields) . ") VALUES ({$placeholders})";
             $stmt = $this->pdo->prepare($sql);
             
-            return $stmt->execute($filteredData);
+            if ($stmt->execute($filteredData)) {
+                return $this->pdo->lastInsertId();
+            }
+            return false;
         } catch (\PDOException $e) {
             error_log("Create error: " . $e->getMessage());
             return false;

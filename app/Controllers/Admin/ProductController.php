@@ -21,7 +21,11 @@ class ProductController extends AdminController {
             }
             
             // Get all products with category and brand information - sorted by ID
-            $sql = "SELECT p.*, c.catName as categoryName, b.brandName 
+            $sql = "SELECT p.*, 
+                           p.productName as name,
+                           p.stock_quantity as stock,
+                           c.catName as category_name, 
+                           b.brandName as brand_name 
                     FROM tbl_product p 
                     LEFT JOIN tbl_category c ON p.categoryID = c.categoryID 
                     LEFT JOIN tbl_brand b ON p.brandID = b.brandID 
@@ -30,11 +34,11 @@ class ProductController extends AdminController {
             $products = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             
             // Get categories for the modal
-            $categoriesStmt = $pdo->query("SELECT * FROM tbl_category WHERE status = 1 ORDER BY catName");
+            $categoriesStmt = $pdo->query("SELECT categoryID, catName as name FROM tbl_category WHERE status = 1 ORDER BY catName");
             $categories = $categoriesStmt->fetchAll(\PDO::FETCH_ASSOC);
             
             // Get brands for the modal
-            $brandsStmt = $pdo->query("SELECT * FROM tbl_brand WHERE status = 1 ORDER BY brandName");
+            $brandsStmt = $pdo->query("SELECT brandID, brandName as name FROM tbl_brand WHERE status = 1 ORDER BY brandName");
             $brands = $brandsStmt->fetchAll(\PDO::FETCH_ASSOC);
             
             $data = [
@@ -84,15 +88,15 @@ class ProductController extends AdminController {
             exit;
         }
         
-        $productName = trim($_POST['productName'] ?? '');
+        $productName = trim($_POST['name'] ?? '');
         $description = trim($_POST['description'] ?? '');
         $shortDescription = trim($_POST['short_description'] ?? '');
         $price = floatval($_POST['price'] ?? 0);
         $salePrice = floatval($_POST['sale_price'] ?? 0);
-        $categoryID = intval($_POST['categoryID'] ?? 0);
-        $brandID = intval($_POST['brandID'] ?? 0);
+        $categoryID = intval($_POST['category_id'] ?? 0);
+        $brandID = intval($_POST['brand_id'] ?? 0);
         $sku = trim($_POST['sku'] ?? '');
-        $stockQuantity = intval($_POST['stock_quantity'] ?? 0);
+        $stockQuantity = intval($_POST['stock'] ?? 0);
         $status = intval($_POST['status'] ?? 1);
         $featured = intval($_POST['featured'] ?? 0);
         
@@ -111,8 +115,8 @@ class ProductController extends AdminController {
             
             // Handle image upload
             $imagePath = null;
-            if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === UPLOAD_ERR_OK) {
-                $uploadResult = $this->handleImageUpload($_FILES['product_image']);
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $uploadResult = $this->handleImageUpload($_FILES['image']);
                 if ($uploadResult['success']) {
                     $imagePath = $uploadResult['filename'];
                 } else {
@@ -129,13 +133,14 @@ class ProductController extends AdminController {
             $stmt->execute([$categoryID, $brandID ?: null, $productName, $slug, $description, $shortDescription, $price, $salePrice ?: null, $sku, $stockQuantity, $imagePath, $status, $featured]);
             
             $_SESSION['flash_success'] = 'Product created successfully';
-            header('Location: /admin/products');
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true, 'message' => 'Product created successfully']);
             exit;
             
         } catch (\Exception $e) {
             error_log("Product creation error: " . $e->getMessage());
-            $_SESSION['flash_error'] = 'Error creating product: ' . $e->getMessage();
-            header('Location: /admin/products');
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Error creating product: ' . $e->getMessage()]);
             exit;
         }
     }
@@ -192,22 +197,23 @@ class ProductController extends AdminController {
             exit;
         }
         
-        $productID = intval($_POST['productID'] ?? 0);
-        $productName = trim($_POST['productName'] ?? '');
+        // Get productID from URL parameter
+        $productID = intval($_GET['id'] ?? 0);
+        $productName = trim($_POST['name'] ?? '');
         $description = trim($_POST['description'] ?? '');
         $shortDescription = trim($_POST['short_description'] ?? '');
         $price = floatval($_POST['price'] ?? 0);
         $salePrice = floatval($_POST['sale_price'] ?? 0);
-        $categoryID = intval($_POST['categoryID'] ?? 0);
-        $brandID = intval($_POST['brandID'] ?? 0);
+        $categoryID = intval($_POST['category_id'] ?? 0);
+        $brandID = intval($_POST['brand_id'] ?? 0);
         $sku = trim($_POST['sku'] ?? '');
-        $stockQuantity = intval($_POST['stock_quantity'] ?? 0);
+        $stockQuantity = intval($_POST['stock'] ?? 0);
         $status = intval($_POST['status'] ?? 1);
         $featured = intval($_POST['featured'] ?? 0);
         
         if (!$productID || empty($productName) || $price <= 0 || !$categoryID) {
-            $_SESSION['flash_error'] = 'Invalid product data';
-            header('Location: /admin/products');
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Invalid product data']);
             exit;
         }
         
@@ -222,18 +228,18 @@ class ProductController extends AdminController {
             $imagePath = $currentProduct['image_path'] ?? null;
             
             // Handle image upload
-            if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] === UPLOAD_ERR_OK) {
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
                 // Delete old image if it exists
-                if ($imagePath && file_exists("public/uploads/products/$imagePath")) {
-                    unlink("public/uploads/products/$imagePath");
+                if ($imagePath && file_exists(__DIR__ . "/../../../public/uploads/$imagePath")) {
+                    unlink(__DIR__ . "/../../../public/uploads/$imagePath");
                 }
                 
-                $uploadResult = $this->handleImageUpload($_FILES['product_image']);
+                $uploadResult = $this->handleImageUpload($_FILES['image']);
                 if ($uploadResult['success']) {
                     $imagePath = $uploadResult['filename'];
                 } else {
-                    $_SESSION['flash_error'] = 'Image upload failed: ' . $uploadResult['error'];
-                    header('Location: /admin/products');
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Image upload failed: ' . $uploadResult['error']]);
                     exit;
                 }
             }
@@ -245,13 +251,14 @@ class ProductController extends AdminController {
             $stmt->execute([$categoryID, $brandID ?: null, $productName, $slug, $description, $shortDescription, $price, $salePrice ?: null, $sku, $stockQuantity, $imagePath, $status, $featured, $productID]);
             
             $_SESSION['flash_success'] = 'Product updated successfully';
-            header('Location: /admin/products');
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true, 'message' => 'Product updated successfully']);
             exit;
             
         } catch (\Exception $e) {
             error_log("Product update error: " . $e->getMessage());
-            $_SESSION['flash_error'] = 'Error updating product: ' . $e->getMessage();
-            header('Location: /admin/products');
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Error updating product: ' . $e->getMessage()]);
             exit;
         }
     }
@@ -299,7 +306,11 @@ class ProductController extends AdminController {
         try {
             $pdo = $this->connectDatabase();
             
-            $stmt = $pdo->prepare("SELECT * FROM tbl_product WHERE productID = ?");
+            $stmt = $pdo->prepare("SELECT *, 
+                                          productName as name, 
+                                          stock_quantity as stock 
+                                   FROM tbl_product 
+                                   WHERE productID = ?");
             $stmt->execute([$productID]);
             $product = $stmt->fetch(\PDO::FETCH_ASSOC);
             
@@ -310,7 +321,7 @@ class ProductController extends AdminController {
             }
             
             header('Content-Type: application/json');
-            echo json_encode($product);
+            echo json_encode(['success' => true, 'product' => $product]);
             exit;
             
         } catch (\Exception $e) {
@@ -327,36 +338,74 @@ class ProductController extends AdminController {
         $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         $maxSize = 5 * 1024 * 1024; // 5MB
         
+        // Log upload attempt
+        error_log("Upload attempt - File: " . print_r($file, true));
+        
         // Check if file was uploaded
         if ($file['error'] !== UPLOAD_ERR_OK) {
-            return ['success' => false, 'error' => 'File upload error'];
+            $errorMsg = "File upload error code: " . $file['error'];
+            error_log($errorMsg);
+            return ['success' => false, 'error' => $errorMsg];
         }
         
         // Check file size
         if ($file['size'] > $maxSize) {
+            $errorMsg = "File size too large: {$file['size']} bytes (max 5MB)";
+            error_log($errorMsg);
             return ['success' => false, 'error' => 'File size too large (max 5MB)'];
         }
         
         // Check file type
         $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         if (!in_array($fileExtension, $allowedTypes)) {
+            $errorMsg = "Invalid file type: $fileExtension";
+            error_log($errorMsg);
             return ['success' => false, 'error' => 'Invalid file type. Allowed: ' . implode(', ', $allowedTypes)];
         }
         
         // Create upload directory if it doesn't exist
-        $uploadDir = 'public/uploads/products/';
+        $uploadDir = __DIR__ . '/../../../public/uploads/products/';
         if (!is_dir($uploadDir)) {
+            error_log("Creating upload directory: $uploadDir");
             mkdir($uploadDir, 0755, true);
+        }
+        
+        // Check directory permissions
+        if (!is_writable($uploadDir)) {
+            $errorMsg = "Upload directory not writable: $uploadDir";
+            error_log($errorMsg);
+            return ['success' => false, 'error' => 'Upload directory not writable'];
         }
         
         // Generate unique filename
         $filename = uniqid() . '_' . time() . '.' . $fileExtension;
         $uploadPath = $uploadDir . $filename;
         
+        error_log("Attempting to move file from {$file['tmp_name']} to $uploadPath");
+        
+        // Check if tmp file exists
+        if (!file_exists($file['tmp_name'])) {
+            $errorMsg = "Temporary file does not exist: {$file['tmp_name']}";
+            error_log($errorMsg);
+            return ['success' => false, 'error' => 'Temporary file not found'];
+        }
+        
         // Move uploaded file
         if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
-            return ['success' => true, 'filename' => $filename];
+            error_log("File upload success: $uploadPath");
+            // Verify file was actually created and has content
+            if (file_exists($uploadPath) && filesize($uploadPath) > 0) {
+                error_log("File verified: " . filesize($uploadPath) . " bytes");
+                // Return the full path including subdirectory so URLs work correctly
+                return ['success' => true, 'filename' => 'products/' . $filename];
+            } else {
+                $errorMsg = "File moved but verification failed: $uploadPath";
+                error_log($errorMsg);
+                return ['success' => false, 'error' => 'File upload verification failed'];
+            }
         } else {
+            $errorMsg = "Failed to move uploaded file from {$file['tmp_name']} to $uploadPath";
+            error_log($errorMsg);
             return ['success' => false, 'error' => 'Failed to move uploaded file'];
         }
     }

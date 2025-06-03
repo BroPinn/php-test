@@ -42,6 +42,12 @@ define('SESSION_NAME', 'onestore_session');
 define('CSRF_TOKEN_NAME', '_token');
 define('PASSWORD_HASH_ALGO', PASSWORD_DEFAULT);
 
+// PayPal Configuration
+define('PAYPAL_CLIENT_ID', 'ATdyQLhtH8ByRKGWfrCSVd13AJhyE9RT0oSvF2fn6oo0Zm4LbBLjL-_hha7DqCvN3dNVOJTqw8jhvb3u'); // Sandbox test client ID
+define('PAYPAL_CLIENT_SECRET', 'EEMfzSecZwyG7_JU6fR497ZRA4CRcONB1og0ctUTb9Udk5eH1QoqxpjV_M9vBfZCAi0X6vTD1WmWhEof'); // Sandbox test client secret
+define('PAYPAL_MODE', 'sandbox'); // 'sandbox' or 'live'
+define('PAYPAL_API_URL', PAYPAL_MODE === 'live' ? 'https://api.paypal.com' : 'https://api.sandbox.paypal.com');
+
 // Error Reporting
 if (APP_ENV === 'development') {
     error_reporting(E_ALL);

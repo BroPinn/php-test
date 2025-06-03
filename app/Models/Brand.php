@@ -2,45 +2,45 @@
 namespace App\Models;
 
 /**
- * Category Model
- * Handles all category-related database operations
+ * Brand Model
+ * Handles all brand-related database operations
  */
-class Category extends BaseModel {
-    protected $table = 'tbl_category';
-    protected $primaryKey = 'categoryID';
-    protected $timestamps = false; // Disable timestamps to prevent SQL errors
+class Brand extends BaseModel {
+    protected $table = 'tbl_brand';
+    protected $primaryKey = 'brandID';
+    protected $timestamps = false; // Disable timestamps since table doesn't have created_at/updated_at
     
     protected $fillable = [
-        'catName',
+        'brandName',
         'slug',
         'description',
-        'image',
+        'logo',
         'status'
     ];
     
     /**
-     * Get all active categories
+     * Get all active brands
      */
     public function getActive() {
-        return $this->where(['status' => 1], 'catName ASC');
+        return $this->where(['status' => 1], 'brandName ASC');
     }
     
     /**
-     * Get categories with product count
+     * Get brands with product count
      */
     public function getWithProductCount() {
-        $sql = "SELECT c.*, COUNT(p.productID) as product_count 
-                FROM {$this->table} c 
-                LEFT JOIN tbl_product p ON c.categoryID = p.categoryID AND p.status = 1
-                WHERE c.status = 1 
-                GROUP BY c.categoryID 
-                ORDER BY c.catName ASC";
+        $sql = "SELECT b.*, COUNT(p.productID) as product_count 
+                FROM {$this->table} b 
+                LEFT JOIN tbl_product p ON b.brandID = p.brandID AND p.status = 1
+                WHERE b.status = 1 
+                GROUP BY b.brandID 
+                ORDER BY b.brandName ASC";
         
         return $this->query($sql);
     }
     
     /**
-     * Get category by slug
+     * Get brand by slug
      */
     public function getBySlug($slug) {
         $conditions = ['slug' => $slug, 'status' => 1];
@@ -49,26 +49,26 @@ class Category extends BaseModel {
     }
     
     /**
-     * Create category with automatic slug generation
+     * Create brand with automatic slug generation
      */
-    public function createCategory($data) {
+    public function createBrand($data) {
         // Generate slug if not provided
-        if (empty($data['slug']) && !empty($data['catName'])) {
-            $data['slug'] = $this->generateUniqueSlug($data['catName']);
+        if (empty($data['slug']) && !empty($data['brandName'])) {
+            $data['slug'] = $this->generateUniqueSlug($data['brandName']);
         }
         
         return $this->create($data);
     }
     
     /**
-     * Update category
+     * Update brand
      */
-    public function updateCategory($id, $data) {
+    public function updateBrand($id, $data) {
         // Generate new slug if name changed
-        if (!empty($data['catName'])) {
+        if (!empty($data['brandName'])) {
             $existing = $this->find($id);
-            if ($existing && $existing['catName'] !== $data['catName']) {
-                $data['slug'] = $this->generateUniqueSlug($data['catName'], $id);
+            if ($existing && $existing['brandName'] !== $data['brandName']) {
+                $data['slug'] = $this->generateUniqueSlug($data['brandName'], $id);
             }
         }
         
@@ -108,20 +108,20 @@ class Category extends BaseModel {
     }
     
     /**
-     * Delete category (soft delete by setting status to 0)
+     * Delete brand (soft delete by setting status to 0)
      */
-    public function deleteCategory($id) {
+    public function deleteBrand($id) {
         return $this->update($id, ['status' => 0]);
     }
     
     /**
-     * Get category statistics
+     * Get brand statistics
      */
     public function getStats() {
         $sql = "SELECT 
-                    COUNT(*) as total_categories,
-                    COUNT(CASE WHEN status = 1 THEN 1 END) as active_categories,
-                    COUNT(CASE WHEN status = 0 THEN 1 END) as inactive_categories
+                    COUNT(*) as total_brands,
+                    COUNT(CASE WHEN status = 1 THEN 1 END) as active_brands,
+                    COUNT(CASE WHEN status = 0 THEN 1 END) as inactive_brands
                 FROM {$this->table}";
         
         $result = $this->query($sql);

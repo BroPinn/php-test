@@ -3,6 +3,7 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Helpers\Helper;
+use App\Helpers\PasswordHelper;
 
 class AuthController extends BaseController {
     
@@ -75,7 +76,14 @@ class AuthController extends BaseController {
             $stmt->execute([$username]);
             $admin = $stmt->fetch(\PDO::FETCH_ASSOC);
             
-            if ($admin && password_verify($password, $admin['password'])) {
+            if ($admin && PasswordHelper::verify($password, $admin['password'])) {
+                // Check if password needs rehashing (for security upgrades)
+                if (PasswordHelper::needsRehash($admin['password'])) {
+                    $newHash = PasswordHelper::hash($password);
+                    $updateStmt = $pdo->prepare("UPDATE tbl_admin SET password = ? WHERE adminID = ?");
+                    $updateStmt->execute([$newHash, $admin['adminID']]);
+                }
+                
                 // Login successful
                 $_SESSION['admin_logged_in'] = true;
                 $_SESSION['admin_id'] = $admin['adminID'];
@@ -171,10 +179,79 @@ class AuthController extends BaseController {
         
         if ($count == 0) {
             // Create default admin (username: admin, password: admin123)
-            $defaultPassword = password_hash('admin123', PASSWORD_DEFAULT);
+            $defaultPassword = PasswordHelper::hash('admin123');
             $stmt = $pdo->prepare("INSERT INTO admin_users (username, password, name, email, role) VALUES (?, ?, ?, ?, ?)");
             $stmt->execute(['admin', $defaultPassword, 'Administrator', 'admin@onestore.com', 'admin']);
         }
+    }
+    
+    /**
+     * Change password functionality
+     */
+    public function changePassword() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $_SESSION['flash_error'] = 'Invalid request method';
+            header('Location: /admin/profile');
+            exit;
+        }
+        
+        $currentPassword = $_POST['current_password'] ?? '';
+        $newPassword = $_POST['new_password'] ?? '';
+        $confirmPassword = $_POST['confirm_password'] ?? '';
+        
+        // Validate inputs
+        if (empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
+            $_SESSION['flash_error'] = 'All password fields are required';
+            header('Location: /admin/profile');
+            exit;
+        }
+        
+        if ($newPassword !== $confirmPassword) {
+            $_SESSION['flash_error'] = 'New passwords do not match';
+            header('Location: /admin/profile');
+            exit;
+        }
+        
+        // Validate password strength
+        $strengthCheck = PasswordHelper::validateStrength($newPassword);
+        if (!$strengthCheck['is_valid']) {
+            $_SESSION['flash_error'] = 'Password not strong enough: ' . implode(', ', $strengthCheck['errors']);
+            header('Location: /admin/profile');
+            exit;
+        }
+        
+        try {
+            $pdo = $this->setupDatabase();
+            
+            // Get current admin
+            $stmt = $pdo->prepare("SELECT * FROM tbl_admin WHERE adminID = ?");
+            $stmt->execute([$_SESSION['admin_id']]);
+            $admin = $stmt->fetch(\PDO::FETCH_ASSOC);
+            
+            if (!$admin || !PasswordHelper::verify($currentPassword, $admin['password'])) {
+                $_SESSION['flash_error'] = 'Current password is incorrect';
+                header('Location: /admin/profile');
+                exit;
+            }
+            
+            // Update password
+            $hashedPassword = PasswordHelper::hash($newPassword);
+            $updateStmt = $pdo->prepare("UPDATE tbl_admin SET password = ? WHERE adminID = ?");
+            $success = $updateStmt->execute([$hashedPassword, $_SESSION['admin_id']]);
+            
+            if ($success) {
+                $_SESSION['flash_success'] = 'Password changed successfully';
+            } else {
+                $_SESSION['flash_error'] = 'Failed to update password';
+            }
+            
+        } catch (\Exception $e) {
+            error_log("Password change error: " . $e->getMessage());
+            $_SESSION['flash_error'] = 'An error occurred while changing password';
+        }
+        
+        header('Location: /admin/profile');
+        exit;
     }
     
     /**

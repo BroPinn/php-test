@@ -16,6 +16,7 @@ class DashboardController extends AdminController {
         $data = [
             'title' => 'Admin Dashboard - OneStore',
             'stats' => $stats,
+            'recent_orders' => $stats['recent_orders'] ?? [],
             'admin_user' => $this->adminUser,
             'success' => $_SESSION['flash_success'] ?? null,
             'error' => $_SESSION['flash_error'] ?? null
