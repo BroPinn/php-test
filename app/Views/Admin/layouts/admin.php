@@ -9,7 +9,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="<?= $csrf_token ?? '' ?>">
     
-    <link rel="icon" href="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/img/kaiadmin/favicon.ico" type="image/x-icon" />
+    <link rel="icon" type="image/png" href="<?= Helper::asset('images/icons/favicon.png') ?>"/>
 
     <!-- Fonts and icons -->
     <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/plugin/webfont/webfont.min.js"></script>

@@ -113,22 +113,7 @@
 
                             <!-- Guest User Notice -->
                             <?php if (!isset($customer) || empty($customer)): ?>
-                            <!-- TEMPORARY DEBUG - ALWAYS VISIBLE -->
-                            <div style="background: yellow; padding: 10px; margin: 10px 0; border: 2px solid red;">
-                                <strong>DEBUG INFO:</strong><br>
-                                Customer variable: <?= isset($customer) ? (empty($customer) ? 'SET but EMPTY' : 'SET and HAS DATA') : 'NOT SET' ?><br>
-                                Session customer_id: <?= $_SESSION['customer_id'] ?? 'NOT SET' ?><br>
-                                Session customer_name: <?= $_SESSION['customer_name'] ?? 'NOT SET' ?><br>
-                                Session customer_email: <?= $_SESSION['customer_email'] ?? 'NOT SET' ?>
-                            </div>
-                            
-                            <!-- DEBUG: Customer data status -->
                             <?php if (defined('DEBUG_MODE') && DEBUG_MODE): ?>
-                            <div class="bg-warning p-15 m-b-20">
-                                <strong>DEBUG:</strong> Customer data: <?= isset($customer) ? 'SET but empty' : 'NOT SET' ?><br>
-                                Session customer_id: <?= $_SESSION['customer_id'] ?? 'not set' ?><br>
-                                Session customer_name: <?= $_SESSION['customer_name'] ?? 'not set' ?>
-                            </div>
                             <?php endif; ?>
                             
                             <div class="bg-light bor10 p-lr-40 p-t-25 p-b-25 m-t-40">
