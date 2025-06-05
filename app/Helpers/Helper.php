@@ -213,12 +213,16 @@ class Helper {
         
         $cleanPath = ltrim($path, '/');
         
+        // Use APP_URL for consistent environment-aware URLs
+        if (defined('APP_URL') && !empty(APP_URL)) {
+            return APP_URL . '/public/uploads/' . $cleanPath;
+        }
+        
+        // Fallback for older implementations
         if (php_sapi_name() === 'cli-server') {
-            // When using PHP built-in server with public as document root
             return '/uploads/' . $cleanPath;
         }
         
-        // Use BASE_PATH for subdirectory hosting
         $basePath = defined('BASE_PATH') && !empty(BASE_PATH) ? BASE_PATH : '';
         return $basePath . '/public/uploads/' . $cleanPath;
     }

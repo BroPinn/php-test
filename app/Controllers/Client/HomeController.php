@@ -78,6 +78,13 @@ class HomeController extends ClientController {
         $this->setTitle('Shop');
         $this->setMeta('Browse our collection of products');
         
+        // Clear cart-related error messages that might come from checkout redirect
+        // The shop page should not show cart error notifications
+        if (isset($_SESSION['flash']['error']) && $_SESSION['flash']['error'] === 'Your cart is empty') {
+            unset($_SESSION['flash']['error']);
+            $this->data['flash_messages'] = [];
+        }
+        
         try {
             $pdo = $this->connectDatabase();
             

@@ -25,13 +25,21 @@ class CartController extends ClientController {
         $shipping = 10.00; // Fixed shipping for now
         $total = $subtotal + $shipping;
         
+        // If cart is empty, clear any existing error flash messages
+        // We want to show our nice empty cart state instead of flash errors
+        if (empty($cartItems)) {
+            unset($_SESSION['flash']['error']);
+            // Also clear any specific cart empty messages
+            $this->data['flash_messages'] = [];
+        }
+        
         $this->setData('cart_items', $cartItems);
         $this->setData('subtotal', $subtotal);
         $this->setData('shipping', $shipping);
         $this->setData('total', $total);
         $this->setData('page_title', 'Shopping Cart - ' . APP_NAME);
         
-        $this->render('pages.cart');
+        $this->view('pages.cart');
     }
     
     /**

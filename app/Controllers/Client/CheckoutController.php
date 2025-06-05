@@ -29,8 +29,8 @@ class CheckoutController extends ClientController {
         $cartItems = $this->getCartItems();
         
         if (empty($cartItems)) {
-            Helper::flash('error', 'Your cart is empty');
-            $this->redirect('/shop');
+            // Instead of showing an error, redirect to cart page which will show nice empty state
+            $this->redirect('/cart');
             return;
         }
         

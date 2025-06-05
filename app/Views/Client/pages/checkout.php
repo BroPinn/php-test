@@ -81,17 +81,19 @@
 <div class="bg0 p-t-75 p-b-85">
     <div class="container">
         <!-- Empty Cart State -->
-        <div id="empty-cart-state" class="text-center p-t-50 p-b-50" style="display: none;">
-            <i class="zmdi zmdi-shopping-cart-plus fs-80 cl6 m-b-30"></i>
-            <h3 class="mtext-111 cl2 p-b-16">Your cart is empty</h3>
-            <p class="stext-113 cl6 p-b-30">Looks like you haven't added anything to your cart yet.</p>
-            <a href="<?= Helper::url('/shop') ?>" class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 m-lr-auto" style="max-width: 200px;">
-                Continue Shopping
+        <div id="empty-cart-state" class="txt-center p-t-50 p-b-50" style="<?= empty($cart_items ?? []) ? '' : 'display: none;' ?>">
+            <div class="empty-cart-icon">
+                <i class="zmdi zmdi-shopping-cart" style="font-size: 64px; color: #999; margin-bottom: 20px;"></i>
+            </div>
+            <h4 class="mtext-109 cl2 p-b-30">Your cart is empty</h4>
+            <p class="stext-113 cl6 p-b-26">Looks like you haven't added anything to your cart yet</p>
+            <a href="<?= Helper::url('/shop') ?>" class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer">
+                CONTINUE SHOPPING
             </a>
         </div>
 
         <!-- Checkout Content -->
-        <div id="checkout-content">
+        <div id="checkout-content" style="<?= empty($cart_items ?? []) ? 'display: none;' : '' ?>">
             <form id="checkout-form" method="POST" action="/checkout/process">
                 <div class="row">
                     <div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
