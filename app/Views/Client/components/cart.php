@@ -31,7 +31,7 @@
                     </div>
 
                     <div class="header-cart-buttons flex-w w-full">
-                        <a href="/checkout" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-lr-auto">
+                        <a href="<?= Helper::url('/checkout') ?>" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-lr-auto">
                             Check Out
                         </a>
                     </div>
@@ -42,6 +42,11 @@
 </div>
 
 <script>
+// JavaScript Configuration
+window.OneStoreClient = window.OneStoreClient || {
+    baseUrl: '<?= Helper::url() ?>',
+    url: (path) => '<?= Helper::url() ?>' + (path || '')
+};
 // Header Cart Management
 class HeaderCart {
     constructor() {
@@ -60,7 +65,7 @@ class HeaderCart {
 
     async loadCartData() {
         try {
-            const response = await fetch('/cart/get');
+            const response = await fetch(window.OneStoreClient.url('/cart/get'));
             const data = await response.json();
             
             if (data.success) {
@@ -94,11 +99,11 @@ class HeaderCart {
         itemsContainer.innerHTML = items.map(item => `
             <li class="header-cart-item flex-w flex-t m-b-12" data-product-id="${item.product_id || item.productID}">
                 <div class="header-cart-item-img">
-                    <img src="/uploads/${item.image_path || item.image || 'placeholder.jpg'}" alt="${item.name || item.productName}" style="width: 60px; height: 60px; object-fit: cover;">
+                    <img src="${window.OneStoreClient.url('/uploads/')}${item.image_path || item.image || 'placeholder.jpg'}" alt="${item.name || item.productName}" style="width: 60px; height: 60px; object-fit: cover;">
                 </div>
 
                 <div class="header-cart-item-txt p-t-8 flex-grow-1">
-                    <a href="/product/${item.product_id || item.productID}" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                    <a href="${window.OneStoreClient.url('/product/')}${item.product_id || item.productID}" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
                         ${item.name || item.productName}
                     </a>
 
@@ -176,7 +181,7 @@ class HeaderCart {
         };
 
         try {
-            const response = await fetch('/cart/add', {
+            const response = await fetch(window.OneStoreClient.url('/cart/add'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -206,7 +211,7 @@ class HeaderCart {
             const requestBody = {};
             requestBody[idType] = id;
             
-            const response = await fetch('/cart/remove', {
+            const response = await fetch(window.OneStoreClient.url('/cart/remove'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

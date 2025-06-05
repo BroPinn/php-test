@@ -85,7 +85,7 @@
             <i class="zmdi zmdi-shopping-cart-plus fs-80 cl6 m-b-30"></i>
             <h3 class="mtext-111 cl2 p-b-16">Your cart is empty</h3>
             <p class="stext-113 cl6 p-b-30">Looks like you haven't added anything to your cart yet.</p>
-            <a href="/shop" class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 m-lr-auto" style="max-width: 200px;">
+            <a href="<?= Helper::url('/shop') ?>" class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 m-lr-auto" style="max-width: 200px;">
                 Continue Shopping
             </a>
         </div>
@@ -128,14 +128,14 @@
                                         </p>
                                     </div>
                                     <div class="col-md-4 text-right">
-                                        <a href="/login" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-                                            <i class="fa fa-sign-in m-r-5"></i>
-                                            Login
-                                        </a>
-                                        <a href="/register" class="flex-c-m stext-101 cl2 size-107 bor2 hov-btn1 p-lr-15 trans-04">
-                                            <i class="fa fa-user-plus m-r-5"></i>
-                                            Register
-                                        </a>
+                                                                <a href="<?= Helper::url('/login') ?>" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                            <i class="fa fa-sign-in m-r-5"></i>
+                            Login
+                        </a>
+                        <a href="<?= Helper::url('/register') ?>" class="flex-c-m stext-101 cl2 size-107 bor2 hov-btn1 p-lr-15 trans-04">
+                            <i class="fa fa-user-plus m-r-5"></i>
+                            Register
+                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -347,6 +347,12 @@ console.warn('PayPal client ID not configured. PayPal payments will not be avail
 <?php endif; ?>
 
 <script>
+// JavaScript Configuration
+window.OneStoreClient = window.OneStoreClient || {
+    baseUrl: '<?= Helper::url() ?>',
+    url: (path) => '<?= Helper::url() ?>' + (path || '')
+};
+
 class CheckoutPage {
     constructor() {
         this.paypalRendered = false;
@@ -361,7 +367,7 @@ class CheckoutPage {
 
     async loadCartData() {
         try {
-            const response = await fetch('/cart/get');
+            const response = await fetch(window.OneStoreClient.url('/cart/get'));
             const data = await response.json();
             
             if (data.success && data.cart_items.length > 0) {
@@ -393,7 +399,7 @@ class CheckoutPage {
             <tr class="table_row" data-product-id="${item.productID}">
                 <td class="column-1">
                     <div class="how-itemcart1">
-                        <img src="/uploads/${item.image_path || 'placeholder.jpg'}" alt="${item.name}">
+                        <img src="${window.OneStoreClient.url('/uploads/')}${item.image_path || 'placeholder.jpg'}" alt="${item.name}">
                     </div>
                 </td>
                 <td class="column-2">${item.name}</td>
@@ -482,7 +488,7 @@ class CheckoutPage {
                         formData.set('paypal_order_id', data.orderID);
                         formData.set('paypal_payment_id', details.id);
                         
-                        const response = await fetch('/checkout/process', {
+                        const response = await fetch(window.OneStoreClient.url('/checkout/process'), {
                             method: 'POST',
                             body: formData
                         });
@@ -490,7 +496,7 @@ class CheckoutPage {
                         const result = await response.json();
                         
                         if (result.success) {
-                            window.location.href = `/order-confirmation/${result.order_id}`;
+                            window.location.href = window.OneStoreClient.url(`/order-confirmation/${result.order_id}`);
                         } else {
                             this.showError(result.message || 'Failed to process order');
                         }
@@ -601,7 +607,7 @@ class CheckoutPage {
             }
 
             // Update cart in backend
-            const response = await fetch('/cart/update', {
+            const response = await fetch(window.OneStoreClient.url('/cart/update'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -727,7 +733,7 @@ class CheckoutPage {
 
         try {
             const formData = new FormData(form);
-            const response = await fetch('/checkout/process', {
+            const response = await fetch(window.OneStoreClient.url('/checkout/process'), {
                 method: 'POST',
                 body: formData
             });
@@ -735,7 +741,7 @@ class CheckoutPage {
             const data = await response.json();
             
             if (data.success) {
-                window.location.href = `/order-confirmation/${data.order_id}`;
+                window.location.href = window.OneStoreClient.url(`/order-confirmation/${data.order_id}`);
             } else {
                 this.showError(data.message || 'Failed to process order');
                 placeOrderBtn.disabled = false;

@@ -204,7 +204,7 @@ function openCreateModal() {
     document.getElementById("categoryModalLabel").textContent = "Add New Category";
     document.getElementById("categoryForm").reset();
     document.getElementById("imagePreview").style.display = "none";
-    document.getElementById("categoryForm").action = "/admin/categories/store";
+    document.getElementById("categoryForm").action = window.OneStoreAdmin.adminUrl("/categories/store");
 }
 
 function editCategory(id) {
@@ -213,7 +213,7 @@ function editCategory(id) {
     document.getElementById("categoryModalLabel").textContent = "Edit Category";
     
     // Fetch category data
-    fetch(`/admin/categories/get?id=${id}`)
+    fetch(window.OneStoreAdmin.adminUrl(`/categories/get?id=${id}`))
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -224,11 +224,11 @@ function editCategory(id) {
                 
                 // Show existing image if available
                 if (category.image) {
-                    document.getElementById("preview").src = "/uploads/" + category.image;
+                    document.getElementById("preview").src = window.OneStoreAdmin.baseUrl + "/uploads/" + category.image;
                     document.getElementById("imagePreview").style.display = "block";
                 }
                 
-                document.getElementById("categoryForm").action = `/admin/categories/update?id=${id}`;
+                document.getElementById("categoryForm").action = window.OneStoreAdmin.adminUrl(`/categories/update?id=${id}`);
                 new bootstrap.Modal(document.getElementById("categoryModal")).show();
             }
         })
@@ -242,7 +242,7 @@ function deleteCategory(id) {
     if (confirm("Are you sure you want to delete this category?")) {
         const form = document.createElement("form");
         form.method = "POST";
-        form.action = `/admin/categories/delete?id=${id}`;
+        form.action = window.OneStoreAdmin.adminUrl(`/categories/delete?id=${id}`);
         document.body.appendChild(form);
         form.submit();
     }

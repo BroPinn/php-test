@@ -235,7 +235,7 @@ function openCreateModal() {
     document.getElementById("sliderModalLabel").textContent = "Add New Slide";
     document.getElementById("sliderForm").reset();
     document.getElementById("imagePreview").style.display = "none";
-    document.getElementById("sliderForm").action = "/admin/slider/store";
+    document.getElementById("sliderForm").action = window.OneStoreAdmin.adminUrl("/slider/store");
     document.getElementById("slider_image").required = true;
 }
 
@@ -245,7 +245,7 @@ function editSlider(id) {
     document.getElementById("sliderModalLabel").textContent = "Edit Slide";
     
     // Fetch slider data
-    fetch(`/admin/slider/get?id=${id}`)
+    fetch(window.OneStoreAdmin.adminUrl(`/slider/get?id=${id}`))
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -259,11 +259,11 @@ function editSlider(id) {
                 
                 // Show existing image if available
                 if (slider.image) {
-                    document.getElementById("preview").src = "/uploads/" + slider.image;
+                    document.getElementById("preview").src = window.OneStoreAdmin.baseUrl + "/uploads/" + slider.image;
                     document.getElementById("imagePreview").style.display = "block";
                 }
                 
-                document.getElementById("sliderForm").action = `/admin/slider/update?id=${id}`;
+                document.getElementById("sliderForm").action = window.OneStoreAdmin.adminUrl(`/slider/update?id=${id}`);
                 document.getElementById("slider_image").required = false; // Don\'t require new image for edit
                 new bootstrap.Modal(document.getElementById("sliderModal")).show();
             }
@@ -276,7 +276,7 @@ function editSlider(id) {
 
 function deleteSlider(id) {
     if (confirm("Are you sure you want to delete this slide?")) {
-        fetch(`/admin/slider/delete?id=${id}`, {
+        fetch(window.OneStoreAdmin.adminUrl(`/slider/delete?id=${id}`), {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",

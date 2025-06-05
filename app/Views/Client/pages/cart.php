@@ -126,7 +126,7 @@
                     </div>
 
                     <div class="cart-actions">
-                        <a href="/shop" class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">
+                        <a href="<?= Helper::url('/shop') ?>" class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer m-tb-5">
                             Continue Shopping
                         </a>
                         
@@ -149,6 +149,12 @@
 </div>
 
 <script>
+// JavaScript Configuration
+window.OneStoreClient = window.OneStoreClient || {
+    baseUrl: '<?= Helper::url() ?>',
+    url: (path) => '<?= Helper::url() ?>' + (path || '')
+};
+
 // Cart management functions
 function updateQuantity(cartID, quantity) {
     if (quantity < 1) {
@@ -156,7 +162,7 @@ function updateQuantity(cartID, quantity) {
         return;
     }
     
-    fetch('/cart/update', {
+    fetch(window.OneStoreClient.url('/cart/update'), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -185,7 +191,7 @@ function removeItem(cartID) {
         return;
     }
     
-    fetch('/cart/remove', {
+    fetch(window.OneStoreClient.url('/cart/remove'), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -213,7 +219,7 @@ function clearCart() {
         return;
     }
     
-    fetch('/cart/clear', {
+    fetch(window.OneStoreClient.url('/cart/clear'), {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -249,7 +255,7 @@ function updateCart() {
 }
 
 function proceedToCheckout() {
-    window.location.href = '/checkout';
+    window.location.href = window.OneStoreClient.url('/checkout');
 }
 </script>
 

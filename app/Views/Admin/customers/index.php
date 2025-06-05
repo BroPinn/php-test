@@ -290,7 +290,7 @@ function editCustomer(customerId) {
     document.getElementById("customerModalLabel").textContent = "Edit Customer";
     
     // Fetch customer data
-    fetch(`/admin/customers/get?id=${customerId}`)
+    fetch(window.OneStoreAdmin.adminUrl(`/customers/get?id=${customerId}`))
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -301,7 +301,7 @@ function editCustomer(customerId) {
                 document.getElementById("phone").value = customer.phone || "";
                 document.getElementById("password").value = "";
                 
-                document.getElementById("customerForm").action = `/admin/customers/update?id=${customerId}`;
+                document.getElementById("customerForm").action = window.OneStoreAdmin.adminUrl(`/customers/update?id=${customerId}`);
                 new bootstrap.Modal(document.getElementById("customerModal")).show();
             } else {
                 alert(data.message || "Error loading customer data");
@@ -315,7 +315,7 @@ function editCustomer(customerId) {
 
 function verifyEmail(customerId) {
     if (confirm("Are you sure you want to verify this customer\'s email?")) {
-        fetch("/admin/customers/verify-email", {
+        fetch(window.OneStoreAdmin.adminUrl("/customers/verify-email"), {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",

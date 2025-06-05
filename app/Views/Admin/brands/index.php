@@ -249,7 +249,7 @@ function openCreateModal() {
     document.getElementById("brandModalLabel").textContent = "Add New Brand";
     document.getElementById("brandForm").reset();
     document.getElementById("logoPreview").style.display = "none";
-    document.getElementById("brandForm").action = "/admin/brands/store";
+    document.getElementById("brandForm").action = window.OneStoreAdmin.adminUrl("/brands/store");
 }
 
 function editBrand(id) {
@@ -258,7 +258,7 @@ function editBrand(id) {
     document.getElementById("brandModalLabel").textContent = "Edit Brand";
     
     // Fetch brand data
-    fetch(`/admin/brands/get?id=${id}`)
+    fetch(window.OneStoreAdmin.adminUrl(`/brands/get?id=${id}`))
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -269,11 +269,11 @@ function editBrand(id) {
                 
                 // Show existing logo if available
                 if (brand.logo) {
-                    document.getElementById("preview").src = "/uploads/" + brand.logo;
+                    document.getElementById("preview").src = window.OneStoreAdmin.baseUrl + "/uploads/" + brand.logo;
                     document.getElementById("logoPreview").style.display = "block";
                 }
                 
-                document.getElementById("brandForm").action = `/admin/brands/update?id=${id}`;
+                document.getElementById("brandForm").action = window.OneStoreAdmin.adminUrl(`/brands/update?id=${id}`);
                 new bootstrap.Modal(document.getElementById("brandModal")).show();
             }
         })
@@ -287,7 +287,7 @@ function deleteBrand(id) {
     if (confirm("Are you sure you want to delete this brand?")) {
         const form = document.createElement("form");
         form.method = "POST";
-        form.action = `/admin/brands/delete?id=${id}`;
+        form.action = window.OneStoreAdmin.adminUrl(`/brands/delete?id=${id}`);
         
         // Add brandID as hidden field
         const brandIDInput = document.createElement("input");
