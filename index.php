@@ -22,6 +22,7 @@ use App\Controllers\Admin\OrderController;
 use App\Controllers\Admin\CustomerController;
 use App\Controllers\Admin\CategoryController;
 use App\Controllers\Admin\BrandController;
+use App\Controllers\ErrorController;
 use App\Helpers\Helper;
 
 try {
@@ -243,8 +244,8 @@ try {
                 break;
                 
             default:
-                http_response_code(404);
-                echo '<h1>404 - Admin Page Not Found</h1>';
+                $errorController = new ErrorController();
+                $errorController->show404Admin();
                 break;
         }
         
@@ -364,22 +365,16 @@ try {
                     break;
                     
                 default:
-                    http_response_code(404);
-                    echo '<h1>404 - Page Not Found</h1>';
+                    $errorController = new ErrorController();
+                    $errorController->show404Client();
                     break;
             }
         }
     }
     
 } catch (Exception $e) {
-    // Handle errors gracefully
-    if (DEBUG_MODE) {
-        echo '<h1>Application Error</h1>';
-        echo '<pre>' . $e->getMessage() . '</pre>';
-        echo '<pre>' . $e->getTraceAsString() . '</pre>';
-    } else {
-        echo '<h1>Something went wrong</h1>';
-        error_log($e->getMessage());
-    }
+    // Handle errors gracefully using ErrorController
+    $errorController = new ErrorController();
+    $errorController->show500($e);
 }
 ?>

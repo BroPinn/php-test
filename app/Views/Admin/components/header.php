@@ -4,7 +4,7 @@
     <div class="main-header-logo">
         <!-- Logo Header -->
         <div class="logo-header" data-background-color="dark">
-            <a href="/admin" class="logo">
+            <a href="<?= Helper::adminUrl('') ?>" class="logo">
                 <img src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/img/kaiadmin/logo_light.svg" 
                      alt="navbar brand" class="navbar-brand" height="20" />
             </a>
@@ -53,7 +53,7 @@
 
                 <!-- View Site Link -->
                 <li class="nav-item topbar-icon">
-                    <a class="nav-link" href="/" target="_blank" title="View Site">
+                    <a class="nav-link" href="<?= Helper::url('') ?>" target="_blank" title="View Site">
                         <i class="fas fa-external-link-alt"></i>
                     </a>
                 </li>
@@ -94,7 +94,7 @@
                             </div>
                         </li>
                         <li>
-                            <a class="see-all" href="/admin/notifications">
+                            <a class="see-all" href="<?= Helper::adminUrl('notifications') ?>">
                                 See all notifications<i class="fa fa-angle-right"></i>
                             </a>
                         </li>
@@ -124,16 +124,16 @@
                                     <div class="u-text">
                                         <h4><?= Helper::sanitize($admin_user['name'] ?? 'Admin') ?></h4>
                                         <p class="text-muted"><?= Helper::sanitize($admin_user['email'] ?? 'admin@onestore.com') ?></p>
-                                        <a href="/admin/profile" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
+                                        <a href="<?= Helper::adminUrl('profile') ?>" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
                                     </div>
                                 </div>
                             </li>
                             <li>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="/admin/profile">My Profile</a>
-                                <a class="dropdown-item" href="/admin/settings">Account Setting</a>
+                                <a class="dropdown-item" href="<?= Helper::adminUrl('profile') ?>">My Profile</a>
+                                <a class="dropdown-item" href="<?= Helper::adminUrl('settings') ?>">Account Setting</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="/admin/logout">Logout</a>
+                                <a class="dropdown-item" href="<?= Helper::adminUrl('logout') ?>">Logout</a>
                             </li>
                         </div>
                     </ul>

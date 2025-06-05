@@ -199,7 +199,7 @@ $content = ob_start();
                 <h5 class="modal-title" id="brandModalLabel">Add New Brand</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="brandForm" method="POST" enctype="multipart/form-data" action="/admin/brands/store">
+            <form id="brandForm" method="POST" enctype="multipart/form-data" action="<?= Helper::adminUrl('brands/store') ?>">
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="name" class="form-label">Brand Name *</label>

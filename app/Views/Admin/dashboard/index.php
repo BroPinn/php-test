@@ -1,4 +1,6 @@
 <?php
+use App\Helpers\Helper;
+
 $page_title = 'Admin Dashboard - OneStore';
 $content = ob_start();
 ?>
@@ -115,7 +117,7 @@ $content = ob_start();
                                 <?php foreach ($recent_orders as $order): ?>
                                     <tr>
                                         <td><strong>#<?= $order['orderID'] ?></strong></td>
-                                        <td><?= htmlspecialchars($order['customer_name']) ?></td>
+                                        <td><?= htmlspecialchars($order['customer_name'] ?? 'Unknown') ?></td>
                                         <td>$<?= number_format($order['total_amount'], 2) ?></td>
                                         <td>
                                             <span class="badge bg-<?= $order['status'] === 'completed' ? 'success' : ($order['status'] === 'pending' ? 'warning' : 'secondary') ?>">
@@ -142,16 +144,16 @@ $content = ob_start();
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="/admin/products" class="btn btn-outline-primary">
+                    <a href="<?= Helper::adminUrl('products') ?>" class="btn btn-outline-primary">
                         <i class="fas fa-plus me-2"></i>Add New Product
                     </a>
-                    <a href="/admin/orders" class="btn btn-outline-success">
+                    <a href="<?= Helper::adminUrl('orders') ?>" class="btn btn-outline-success">
                         <i class="fas fa-eye me-2"></i>View All Orders
                     </a>
-                    <a href="/admin/customers" class="btn btn-outline-info">
+                    <a href="<?= Helper::adminUrl('customers') ?>" class="btn btn-outline-info">
                         <i class="fas fa-users me-2"></i>Manage Customers
                     </a>
-                    <a href="/admin/settings" class="btn btn-outline-secondary">
+                    <a href="<?= Helper::adminUrl('settings') ?>" class="btn btn-outline-secondary">
                         <i class="fas fa-cog me-2"></i>Store Settings
                     </a>
                 </div>

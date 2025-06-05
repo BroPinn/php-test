@@ -249,6 +249,16 @@
         <?php endforeach; ?>
     <?php endif; ?>
 
+    <!-- OneStore Admin Configuration -->
+    <script>
+        window.OneStoreAdmin = {
+            baseUrl: '<?= Helper::url('') ?>',
+            adminUrl: '<?= Helper::adminUrl('') ?>',
+            assetUrl: '<?= Helper::asset('') ?>',
+            csrfToken: '<?= $csrf_token ?? '' ?>'
+        };
+    </script>
+
     <!-- Inline Scripts -->
     <?php if (isset($inline_scripts)): ?>
         <script>

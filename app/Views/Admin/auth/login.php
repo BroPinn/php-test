@@ -144,7 +144,7 @@
                             </div>
                         <?php endif; ?>
                         
-                        <form method="POST" action="/admin/login">
+                        <form method="POST" action="<?= Helper::adminUrl('login') ?>">
                             <div class="form-group">
                                 <label for="username" class="form-label">Username</label>
                                 <div class="input-group">
