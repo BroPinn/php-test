@@ -287,7 +287,7 @@ $content = ob_start();
                 <h5 class="modal-title">Update Order Status</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="POST" action="/admin/orders/update-status">
+                            <form method="POST" action="<?= Helper::adminUrl('orders/update-status') ?>">
                 <div class="modal-body">
                     <input type="hidden" name="orderID" id="statusOrderID">
                     <input type="hidden" name="redirect" value="<?= $_SERVER['REQUEST_URI'] ?>">

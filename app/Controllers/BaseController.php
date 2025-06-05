@@ -65,6 +65,11 @@ abstract class BaseController {
      * Redirect to URL
      */
     protected function redirect($url, $statusCode = 302) {
+        // Make URL environment-aware if it's a relative path
+        if ($url[0] === '/' && !str_starts_with($url, APP_URL)) {
+            $url = APP_URL . $url;
+        }
+        
         http_response_code($statusCode);
         header("Location: {$url}");
         exit;

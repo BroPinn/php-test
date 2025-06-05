@@ -158,11 +158,11 @@ $content = ob_start();
                                 <td><strong>$<?= number_format($order['total_amount'], 2) ?></strong></td>
                                 <td>
                                     <span class="badge bg-<?= 
-                                        ($order['status'] ?? '') === 'delivered' ? 'success' : 
-                                        (($order['status'] ?? '') === 'shipped' ? 'info' : 
-                                        (($order['status'] ?? '') === 'processing' ? 'warning' : 
-                                        (($order['status'] ?? '') === 'cancelled' ? 'danger' : 'secondary'))) ?>">
-                                        <?= ucfirst($order['status'] ?? 'pending') ?>
+                                        ($order['order_status'] ?? '') === 'delivered' ? 'success' : 
+                                        (($order['order_status'] ?? '') === 'shipped' ? 'info' : 
+                                        (($order['order_status'] ?? '') === 'processing' ? 'warning' : 
+                                        (($order['order_status'] ?? '') === 'cancelled' ? 'danger' : 'secondary'))) ?>">
+                                        <?= ucfirst($order['order_status'] ?? 'pending') ?>
                                     </span>
                                 </td>
                                 <td>
@@ -306,12 +306,13 @@ $content = ob_get_clean();
 
 // Orders-specific JavaScript
 $inline_scripts = '
-// Order Management JavaScript
 let currentOrderId = null;
 
 function updateOrderStatus(orderId) {
     currentOrderId = orderId;
-    document.getElementById("orderStatusForm").action = `/admin/orders/update-status?id=${orderId}`;
+    const actionUrl = window.OneStoreAdmin.adminUrl("orders/update-status?id=" + orderId);
+    
+    document.getElementById("orderStatusForm").action = actionUrl;
     
     // Reset form
     document.getElementById("order_status").value = "pending";
@@ -322,7 +323,9 @@ function updateOrderStatus(orderId) {
 
 function updatePaymentStatus(orderId) {
     currentOrderId = orderId;
-    document.getElementById("paymentStatusForm").action = `/admin/orders/update-payment-status?id=${orderId}`;
+    const actionUrl = window.OneStoreAdmin.adminUrl("orders/update-payment-status?id=" + orderId);
+    
+    document.getElementById("paymentStatusForm").action = actionUrl;
     
     // Reset form
     document.getElementById("payment_status_select").value = "pending";
@@ -331,7 +334,7 @@ function updatePaymentStatus(orderId) {
     new bootstrap.Modal(document.getElementById("paymentStatusModal")).show();
 }
 
-// Form submissions
+// Order status form submission
 document.getElementById("orderStatusForm").addEventListener("submit", function(e) {
     e.preventDefault();
     
@@ -346,18 +349,42 @@ document.getElementById("orderStatusForm").addEventListener("submit", function(e
         method: "POST",
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("HTTP error! status: " + response.status);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            bootstrap.Modal.getInstance(document.getElementById("orderStatusModal")).hide();
-            location.reload();
+            const modal = bootstrap.Modal.getInstance(document.getElementById("orderStatusModal"));
+            
+            // Update button to show success
+            submitBtn.textContent = "✓ Updated!";
+            submitBtn.className = "btn btn-success";
+            
+            // Close modal and reload after brief delay
+            setTimeout(() => {
+                if (modal) {
+                    modal.hide();
+                }
+                
+                if (typeof swal !== "undefined") {
+                    swal("Success!", "Order status updated successfully", "success").then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    alert("Order status updated successfully!");
+                    window.location.reload();
+                }
+            }, 500);
+            
         } else {
             alert(data.message || "An error occurred");
         }
     })
     .catch(error => {
-        console.error("Error:", error);
-        alert("An error occurred while updating the order status");
+        alert("An error occurred while updating the order status: " + error.message);
     })
     .finally(() => {
         submitBtn.disabled = false;
@@ -365,6 +392,7 @@ document.getElementById("orderStatusForm").addEventListener("submit", function(e
     });
 });
 
+// Payment status form submission
 document.getElementById("paymentStatusForm").addEventListener("submit", function(e) {
     e.preventDefault();
     
@@ -379,26 +407,48 @@ document.getElementById("paymentStatusForm").addEventListener("submit", function
         method: "POST",
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("HTTP error! status: " + response.status);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            bootstrap.Modal.getInstance(document.getElementById("paymentStatusModal")).hide();
-            location.reload();
+            const modal = bootstrap.Modal.getInstance(document.getElementById("paymentStatusModal"));
+            
+            // Update button to show success
+            submitBtn.textContent = "✓ Updated!";
+            submitBtn.className = "btn btn-success";
+            
+            // Close modal and reload after brief delay
+            setTimeout(() => {
+                if (modal) {
+                    modal.hide();
+                }
+                
+                if (typeof swal !== "undefined") {
+                    swal("Success!", "Payment status updated successfully", "success").then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    alert("Payment status updated successfully!");
+                    window.location.reload();
+                }
+            }, 500);
+            
         } else {
             alert(data.message || "An error occurred");
         }
     })
     .catch(error => {
-        console.error("Error:", error);
-        alert("An error occurred while updating the payment status");
+        alert("An error occurred while updating the payment status: " + error.message);
     })
     .finally(() => {
         submitBtn.disabled = false;
         submitBtn.textContent = originalText;
     });
 });
-
-console.log("Order management loaded successfully");
 ';
 
 // Include the admin layout

@@ -199,7 +199,7 @@ function openCreateModal() {
     document.getElementById("productModalLabel").textContent = "Add New Product";
     document.getElementById("productForm").reset();
     document.getElementById("imagePreview").style.display = "none";
-    document.getElementById("productForm").action = window.OneStoreAdmin.adminUrl + "products/store";
+    document.getElementById("productForm").action = window.OneStoreAdmin.adminUrl("products/store");
 }
 
 function editProduct(id) {
@@ -208,7 +208,7 @@ function editProduct(id) {
     document.getElementById("productModalLabel").textContent = "Edit Product";
     
     // Fetch product data
-    fetch(`${window.OneStoreAdmin.adminUrl}products/get?id=${id}`)
+    fetch(window.OneStoreAdmin.adminUrl("products/get?id=" + id))
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -223,11 +223,11 @@ function editProduct(id) {
                 
                 // Show existing image if available
                 if (product.image_path) {
-                    document.getElementById("preview").src = window.OneStoreAdmin.baseUrl + "uploads/" + product.image_path;
+                    document.getElementById("preview").src = window.OneStoreAdmin.baseUrl + "/uploads/" + product.image_path;
                     document.getElementById("imagePreview").style.display = "block";
                 }
                 
-                document.getElementById("productForm").action = `${window.OneStoreAdmin.adminUrl}products/update?id=${id}`;
+                document.getElementById("productForm").action = window.OneStoreAdmin.adminUrl("products/update?id=" + id);
                 new bootstrap.Modal(document.getElementById("productModal")).show();
             }
         })
@@ -241,7 +241,7 @@ function deleteProduct(id) {
     if (confirm("Are you sure you want to delete this product?")) {
         const form = document.createElement("form");
         form.method = "POST";
-        form.action = `${window.OneStoreAdmin.adminUrl}products/delete?id=${id}`;
+        form.action = window.OneStoreAdmin.adminUrl("products/delete?id=" + id);
         document.body.appendChild(form);
         form.submit();
     }

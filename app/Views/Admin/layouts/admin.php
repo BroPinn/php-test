@@ -249,13 +249,14 @@
         <?php endforeach; ?>
     <?php endif; ?>
 
-    <!-- OneStore Admin Configuration -->
+    <!-- OneStore Admin Configuration - FIXED for both Development & Production -->
     <script>
         window.OneStoreAdmin = {
-            baseUrl: '<?= Helper::url('') ?>',
+            baseUrl: '<?= APP_URL ?>',
             adminUrl: function(path) {
                 const cleanPath = (path || '').replace(/^\//, '');
-                return '<?= Helper::adminUrl('') ?>' + cleanPath;
+                const baseUrl = '<?= APP_URL ?>';
+                return baseUrl + '/admin/' + cleanPath;
             },
             assetUrl: '<?= Helper::asset('') ?>',
             csrfToken: '<?= $csrf_token ?? '' ?>'

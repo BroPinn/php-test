@@ -159,7 +159,10 @@ class AuthController extends BaseController {
         unset($_SESSION['admin_last_activity']);
         
         $_SESSION['flash_success'] = 'You have been logged out successfully';
-        header('Location: ' . \App\Helpers\Helper::adminUrl('login'));
+        
+        // Use APP_URL to ensure correct environment-aware redirect
+        $loginUrl = APP_URL . '/admin/login';
+        header('Location: ' . $loginUrl);
         exit;
     }
     

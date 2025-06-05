@@ -42,10 +42,14 @@
 </div>
 
 <script>
-// JavaScript Configuration
+// JavaScript Configuration - FIXED for both Development & Production
 window.OneStoreClient = window.OneStoreClient || {
-    baseUrl: '<?= Helper::url() ?>',
-    url: (path) => '<?= Helper::url() ?>' + (path || '')
+    baseUrl: '<?= APP_URL ?>',
+    url: function(path) {
+        const cleanPath = (path || '').replace(/^\//, '');
+        const baseUrl = '<?= APP_URL ?>';
+        return baseUrl + (cleanPath ? '/' + cleanPath : '');
+    }
 };
 // Header Cart Management
 class HeaderCart {
