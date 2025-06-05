@@ -146,13 +146,25 @@ try {
                 break;
                 
             case '/orders/update-status':
-                $controller = new OrderController();
-                $controller->updateStatus();
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller = new OrderController();
+                    $controller->updateStatus();
+                } else {
+                    http_response_code(405);
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+                }
                 break;
                 
             case '/orders/update-payment-status':
-                $controller = new OrderController();
-                $controller->updatePaymentStatus();
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller = new OrderController();
+                    $controller->updatePaymentStatus();
+                } else {
+                    http_response_code(405);
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+                }
                 break;
                 
             case '/orders/get':
@@ -172,13 +184,25 @@ try {
                 break;
                 
             case '/customers/update':
-                $controller = new CustomerController();
-                $controller->update();
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller = new CustomerController();
+                    $controller->update();
+                } else {
+                    http_response_code(405);
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+                }
                 break;
                 
             case '/customers/update-status':
-                $controller = new CustomerController();
-                $controller->updateStatus();
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller = new CustomerController();
+                    $controller->updateStatus();
+                } else {
+                    http_response_code(405);
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+                }
                 break;
                 
             case '/customers/verify-email':
@@ -203,13 +227,25 @@ try {
                 break;
                 
             case '/categories/update':
-                $controller = new CategoryController();
-                $controller->update();
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller = new CategoryController();
+                    $controller->update();
+                } else {
+                    http_response_code(405);
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+                }
                 break;
                 
             case '/categories/delete':
-                $controller = new CategoryController();
-                $controller->delete();
+                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                    $controller = new CategoryController();
+                    $controller->delete();
+                } else {
+                    http_response_code(405);
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+                }
                 break;
                 
             case '/categories/get':

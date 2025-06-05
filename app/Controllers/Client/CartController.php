@@ -38,6 +38,11 @@ class CartController extends ClientController {
      * Add item to cart (AJAX)
      */
     public function add() {
+        // Ensure session is started
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
         header('Content-Type: application/json');
         
         try {
@@ -96,6 +101,11 @@ class CartController extends ClientController {
      * Update cart item quantity (AJAX)
      */
     public function update() {
+        // Ensure session is started
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
         header('Content-Type: application/json');
         
         try {
@@ -291,6 +301,11 @@ class CartController extends ClientController {
      * Get cart data (AJAX)
      */
     public function get() {
+        // Ensure session is started
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
         header('Content-Type: application/json');
         
         try {
@@ -316,8 +331,16 @@ class CartController extends ClientController {
             ]);
             
         } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'An error occurred']);
+            error_log("Cart get error: " . $e->getMessage());
+            echo json_encode([
+                'success' => false, 
+                'message' => 'Error loading cart',
+                'cart_items' => [],
+                'cart_totals' => ['subtotal' => 0, 'shipping' => 0, 'total' => 0, 'total_items' => 0]
+            ]);
         }
+        
+        exit;
     }
     
     /**

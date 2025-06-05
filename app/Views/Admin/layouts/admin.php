@@ -253,7 +253,10 @@
     <script>
         window.OneStoreAdmin = {
             baseUrl: '<?= Helper::url('') ?>',
-            adminUrl: '<?= Helper::adminUrl('') ?>',
+            adminUrl: function(path) {
+                const cleanPath = (path || '').replace(/^\//, '');
+                return '<?= Helper::adminUrl('') ?>' + cleanPath;
+            },
             assetUrl: '<?= Helper::asset('') ?>',
             csrfToken: '<?= $csrf_token ?? '' ?>'
         };
