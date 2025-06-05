@@ -64,7 +64,7 @@ abstract class AdminController extends BaseController {
                 
                 $stmt = $pdo->prepare("SELECT * FROM tbl_admin WHERE adminID = ?");
                 $stmt->execute([$_SESSION['admin_id']]);
-                $this->adminUser = $stmt->fetch(\PDO::FETCH_ASSOC);
+                $this->adminUser = $stmt->fetch(PDO::FETCH_ASSOC);
                 
                 if (!$this->adminUser) {
                     $this->logout();
@@ -271,15 +271,11 @@ abstract class AdminController extends BaseController {
      */
     protected function connectDatabase() {
         try {
-            $dsn = "mysql:host=localhost;dbname=onestore_db;charset=utf8mb4";
-            $pdo = new PDO($dsn, 'root', '', [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-            ]);
             
-            return $pdo;
+            // Use the centralized database connection function
+            return connectToDatabase();
             
-        } catch (PDOException $e) {
+        } catch (\Exception $e) {
             error_log("Database connection error: " . $e->getMessage());
             return null;
         }

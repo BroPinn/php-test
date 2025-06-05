@@ -25,10 +25,16 @@ use App\Controllers\Admin\BrandController;
 use App\Helpers\Helper;
 
 try {
-    // Initialize the application
+    // Initialize the application - Environment aware path cleaning
     $uri = $_SERVER['REQUEST_URI'];
     $path = parse_url($uri, PHP_URL_PATH);
-    $path = str_replace('/php-test', '', $path); // Remove base path
+    
+    // Remove base path based on environment
+    if (defined('BASE_PATH') && !empty(BASE_PATH)) {
+        $path = str_replace(BASE_PATH, '', $path);
+    } else {
+        $path = str_replace('/php-test', '', $path); // Local development
+    }
     
     // Admin Routes
     if (strpos($path, '/admin') === 0) {

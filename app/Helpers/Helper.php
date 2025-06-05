@@ -188,25 +188,57 @@ class Helper {
     }
     
     /**
-     * Get asset URL
+     * Get asset URL - Environment aware
      */
     public static function asset($path) {
+        $cleanPath = ltrim($path, '/');
+        
         if (php_sapi_name() === 'cli-server') {
             // When using PHP built-in server with public as document root
-            return '/assets/' . ltrim($path, '/');
+            return '/assets/' . $cleanPath;
         }
-        return APP_URL . '/public/assets/' . ltrim($path, '/');
+        
+        // Use BASE_PATH for subdirectory hosting
+        $basePath = defined('BASE_PATH') && !empty(BASE_PATH) ? BASE_PATH : '';
+        return $basePath . '/public/assets/' . $cleanPath;
     }
     
     /**
-     * Get upload URL
+     * Get upload URL - Environment aware
      */
     public static function upload($path) {
+        if (empty($path)) {
+            return self::asset('images/no-image.png');
+        }
+        
+        $cleanPath = ltrim($path, '/');
+        
         if (php_sapi_name() === 'cli-server') {
             // When using PHP built-in server with public as document root
-            return '/uploads/' . ltrim($path, '/');
+            return '/uploads/' . $cleanPath;
         }
-        return APP_URL . '/public/uploads/' . ltrim($path, '/');
+        
+        // Use BASE_PATH for subdirectory hosting
+        $basePath = defined('BASE_PATH') && !empty(BASE_PATH) ? BASE_PATH : '';
+        return $basePath . '/public/uploads/' . $cleanPath;
+    }
+    
+    /**
+     * Generate URL for routes - Environment aware
+     */
+    public static function url($path = '') {
+        $cleanPath = ltrim($path, '/');
+        $basePath = defined('BASE_PATH') && !empty(BASE_PATH) ? BASE_PATH : '';
+        return $basePath . '/' . $cleanPath;
+    }
+    
+    /**
+     * Generate admin URL - Environment aware
+     */
+    public static function adminUrl($path = '') {
+        $cleanPath = ltrim($path, '/');
+        $basePath = defined('BASE_PATH') && !empty(BASE_PATH) ? BASE_PATH : '';
+        return $basePath . '/admin/' . $cleanPath;
     }
 }
 ?> 

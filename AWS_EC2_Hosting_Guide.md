@@ -47,18 +47,18 @@ Your applications should currently be accessible at:
 4. Click "Open" to connect
 
 ### For Mac/Linux Users:
-```bash
+   ```bash
 # Replace with your actual key file path
 ssh -i /path/to/your-key-pair.pem ubuntu@54.179.0.116
-```
+   ```
 
 ### Verify Connection:
-```bash
+   ```bash
 # Check current directory and permissions
 pwd
 whoami
 sudo systemctl status nginx mysql
-```
+   ```
 
 ---
 
@@ -131,6 +131,13 @@ cd /var/www/onestore
 sudo git clone https://github.com/BroPinn/php-test.git .
 
 # Verify files are present
+sudo mv php-test/* .
+sudo mv php-test/.* . 2>/dev/null || true  # Move hidden files, ignore errors
+
+# Remove the now-empty php-test directory
+sudo rmdir php-test
+
+# Verify the structure is correct now
 ls -la
 ```
 
@@ -627,7 +634,7 @@ Open browser and visit: **`http://54.179.0.116/onestore/admin`**
 ### Common Issues and Solutions:
 
 #### **1. 404 Not Found for OneStore**
-```bash
+   ```bash
 # Check Nginx error logs
 sudo tail -f /var/log/nginx/onestore_error.log
 
@@ -639,9 +646,9 @@ ls -la /var/www/onestore/
 ```
 
 #### **2. 502 Bad Gateway Error**
-```bash
+   ```bash
 # Check PHP-FPM status
-sudo systemctl status php8.1-fpm
+   sudo systemctl status php8.1-fpm
 
 # Restart PHP-FPM
 sudo systemctl restart php8.1-fpm
@@ -651,19 +658,19 @@ sudo tail -f /var/log/php8.1-fpm.log
 ```
 
 #### **3. Database Connection Errors**
-```bash
+   ```bash
 # Test database connectivity
 mysql -u onestore_user -p onestore_db
 
 # Check MySQL service
-sudo systemctl status mysql
+   sudo systemctl status mysql
 
 # Verify database configuration
 sudo nano /var/www/onestore/database.php
-```
+   ```
 
 #### **4. Images Not Loading**
-```bash
+   ```bash
 # Check upload directory permissions
 ls -la /var/www/onestore/public/uploads/
 
@@ -675,7 +682,7 @@ sudo nginx -t
 ```
 
 #### **5. Admin Panel Not Accessible**
-```bash
+   ```bash
 # Check admin table
 mysql -u onestore_user -p onestore_db -e "SELECT * FROM tbl_admin;"
 
@@ -717,7 +724,7 @@ sudo mysqladmin -u root -p processlist
 ### **Regular Backups:**
 
 #### **Database Backup Script:**
-```bash
+   ```bash
 # Create backup directory
 sudo mkdir -p /home/ubuntu/onestore_backups
 
@@ -726,8 +733,8 @@ sudo nano /usr/local/bin/onestore_backup.sh
 ```
 
 **Add this backup script:**
-```bash
-#!/bin/bash
+   ```bash
+   #!/bin/bash
 # OneStore Backup Script
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 BACKUP_DIR="/home/ubuntu/onestore_backups"
@@ -735,8 +742,8 @@ DB_NAME="onestore_db"
 DB_USER="onestore_user"
 DB_PASS="OneStore_Secure_2024!@#"
 
-# Create backup directory
-mkdir -p $BACKUP_DIR
+   # Create backup directory
+   mkdir -p $BACKUP_DIR
 
 # Database backup
 mysqldump -u $DB_USER -p$DB_PASS $DB_NAME > $BACKUP_DIR/onestore_db_$TIMESTAMP.sql
@@ -751,7 +758,7 @@ echo "Backup completed: $TIMESTAMP"
 ```
 
 **Make executable and schedule:**
-```bash
+   ```bash
 # Make script executable
 sudo chmod +x /usr/local/bin/onestore_backup.sh
 
@@ -776,7 +783,7 @@ sudo ufw enable
 ```
 
 #### **Install Fail2Ban:**
-```bash
+   ```bash
 # Install fail2ban for protection against brute force
 sudo apt install -y fail2ban
 
@@ -817,7 +824,7 @@ sudo apt install -y certbot python3-certbot-nginx
 ### **Monitoring & Logs:**
 
 #### **Set up Log Rotation:**
-```bash
+   ```bash
 # Configure log rotation for OneStore
 sudo nano /etc/logrotate.d/onestore
 ```
@@ -839,7 +846,7 @@ sudo nano /etc/logrotate.d/onestore
 ```
 
 #### **Monitor Disk Space:**
-```bash
+   ```bash
 # Create disk monitoring script
 sudo nano /usr/local/bin/disk_monitor.sh
 ```
@@ -859,7 +866,7 @@ fi
 ### **Performance Optimization:**
 
 #### **Enable PHP OPcache:**
-```bash
+   ```bash
 # Edit PHP configuration
 sudo nano /etc/php/8.1/fpm/php.ini
 ```
@@ -875,7 +882,7 @@ opcache.fast_shutdown=1
 ```
 
 #### **MySQL Optimization:**
-```bash
+   ```bash
 # Edit MySQL configuration
 sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf
 ```
@@ -892,7 +899,7 @@ thread_cache_size = 8
 ```
 
 **Restart services:**
-```bash
+   ```bash
 sudo systemctl restart php8.1-fpm mysql nginx
 ```
 

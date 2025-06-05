@@ -117,22 +117,30 @@ class AuthController extends BaseController {
      */
     private function setupDatabase() {
         try {
-            // First connect without database to create it
-            $dsn = "mysql:host=localhost;charset=utf8mb4";
-            $pdo = new \PDO($dsn, 'root', '', [
-                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-                \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
-            ]);
+            // Use centralized connection for normal operations
             
-            // Create database if it doesn't exist
-            $pdo->exec("CREATE DATABASE IF NOT EXISTS onestore_db CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
-            $pdo->exec("USE onestore_db");
-            
+            $pdo = connectToDatabase();
             return $pdo;
             
-        } catch (\PDOException $e) {
-            error_log("Database setup error: " . $e->getMessage());
-            return null;
+        } catch (\Exception $e) {
+            // If centralized connection fails, try to create database
+            try {
+                $dsn = "mysql:host=" . DB_HOST . ";charset=" . DB_CHARSET;
+                $tempPdo = new \PDO($dsn, DB_USER, DB_PASS, [
+                    \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                    \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC
+                ]);
+                
+                // Create database if it doesn't exist
+                $tempPdo->exec("CREATE DATABASE IF NOT EXISTS " . DB_NAME . " CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
+                $tempPdo->exec("USE " . DB_NAME);
+                
+                return $tempPdo;
+                
+            } catch (\PDOException $e) {
+                error_log("Database setup error: " . $e->getMessage());
+                return null;
+            }
         }
     }
     

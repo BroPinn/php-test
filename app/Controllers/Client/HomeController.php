@@ -14,14 +14,14 @@ class HomeController extends ClientController {
     }
     
     /**
-     * Connect to database
+     * Connect to database - Use centralized connection
      */
     private function connectDatabase() {
         try {
-            $pdo = new \PDO('mysql:host=localhost;dbname=onestore_db;charset=utf8mb4', 'root', '');
-            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            return $pdo;
-        } catch (\Exception $e) {
+            
+            // Use the centralized database connection function
+            return connectToDatabase();
+        } catch (Exception $e) {
             error_log("Database connection error: " . $e->getMessage());
             return null;
         }
@@ -60,7 +60,7 @@ class HomeController extends ClientController {
                 'categories' => $categories
             ]);
             
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             error_log("Homepage error: " . $e->getMessage());
             $this->view('pages.home', [
                 'featured_products' => [],
@@ -167,7 +167,7 @@ class HomeController extends ClientController {
                 ]
             ]);
             
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             error_log("Shop page error: " . $e->getMessage());
             $this->view('pages.shop', [
                 'products' => [],
@@ -241,7 +241,7 @@ class HomeController extends ClientController {
                 'count' => count($products)
             ]);
             
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             error_log("Get products API error: " . $e->getMessage());
             echo json_encode(['error' => 'Unable to load products']);
         }
@@ -265,7 +265,7 @@ class HomeController extends ClientController {
                 'categories' => $categories
             ]);
             
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             error_log("Get categories API error: " . $e->getMessage());
             echo json_encode(['error' => 'Unable to load categories']);
         }
@@ -289,7 +289,7 @@ class HomeController extends ClientController {
                 'sliders' => $sliders
             ]);
             
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             error_log("Get sliders API error: " . $e->getMessage());
             echo json_encode(['error' => 'Unable to load sliders']);
         }
@@ -387,7 +387,7 @@ class HomeController extends ClientController {
                 ]);
             }
             
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             error_log("Load more API error: " . $e->getMessage());
             echo json_encode([
                 'success' => false,
