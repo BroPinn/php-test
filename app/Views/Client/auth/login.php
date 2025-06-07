@@ -22,7 +22,7 @@
                         </div>
                     <?php endif; ?>
 
-                    <form method="POST" action="/login">
+                    <form method="POST" action="/onestore/login">
                         <div class="p-b-20">
                             <label class="stext-102 cl3 p-b-5">Email Address *</label>
                             <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20" type="email" name="email" required>

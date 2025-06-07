@@ -22,7 +22,7 @@
                         </div>
                     <?php endif; ?>
 
-                    <form method="POST" action="/register">
+                    <form method="POST" action="/onestore/register">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="p-b-20">
