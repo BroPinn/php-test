@@ -1,5 +1,8 @@
 RewriteEngine On
-
+# Prevent access to admin directory
+RewriteCond %{REQUEST_URI} ^/admin(/.*)?$ [NC]
+RewriteCond %{REQUEST_URI} !^/onestore/admin [NC]
+RewriteRule ^admin(/.*)?$ - [R=404,L]
 # Prevent access to sensitive files
 <Files "*.sql">
     Order allow,deny
