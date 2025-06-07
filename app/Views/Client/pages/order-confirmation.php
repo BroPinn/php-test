@@ -92,7 +92,7 @@
                                 <tr class="table_row">
                                     <td class="column-1">
                                         <div class="how-itemcart1">
-                                            <img src="/uploads/<?= $item['image_path'] ?? 'placeholder.jpg' ?>" alt="<?= htmlspecialchars($item['product_name']) ?>">
+                                            <img src="/public/uploads/<?= $item['image_path'] ?? 'placeholder.jpg' ?>" alt="<?= htmlspecialchars($item['product_name']) ?>">
                                         </div>
                                     </td>
                                     <td class="column-2"><?= htmlspecialchars($item['product_name']) ?></td>
