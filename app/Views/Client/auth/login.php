@@ -54,7 +54,7 @@
                             <span class="stext-113 cl6">
                                 Don't have an account?
                             </span>
-                            <a href="/register" class="stext-113 cl2 hov-cl1 trans-04">
+                            <a href="/onestore/register" class="stext-113 cl2 hov-cl1 trans-04">
                                 Create Account
                             </a>
                         </div>

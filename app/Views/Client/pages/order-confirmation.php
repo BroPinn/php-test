@@ -107,7 +107,7 @@
 
                     <!-- Action Buttons -->
                     <div class="text-center p-t-20">
-                        <a href="/shop" class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 m-r-10 m-b-10">
+                        <a href="/onestore/shop" class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 m-r-10 m-b-10">
                             Continue Shopping
                         </a>
                         <?php $user = $this->getCurrentUser(); ?>

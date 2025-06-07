@@ -81,7 +81,7 @@
                             <span class="stext-113 cl6">
                                 Already have an account?
                             </span>
-                            <a href="/login" class="stext-113 cl2 hov-cl1 trans-04">
+                            <a href="/onestore/login" class="stext-113 cl2 hov-cl1 trans-04">
                                 Sign In
                             </a>
                         </div>
