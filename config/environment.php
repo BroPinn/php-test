@@ -53,8 +53,8 @@ if ($environment === 'production') {
     define('PAYPAL_MODE', 'live');
     // Note: PayPal credentials should be loaded from environment variables in production
     // For now, we'll use sandbox for safety until live credentials are configured
-    define('PAYPAL_CLIENT_ID', ''); // Set this via environment variables
-    define('PAYPAL_CLIENT_SECRET', ''); // Set this via environment variables
+    define('PAYPAL_CLIENT_ID', 'ATdyQLhtH8ByRKGWfrCSVd13AJhyE9RT0oSvF2fn6oo0Zm4LbBLjL-_hha7DqCvN3dNVOJTqw8jhvb3u'); // Set this via environment variables
+    define('PAYPAL_CLIENT_SECRET', 'EEMfzSecZwyG7_JU6fR497ZRA4CRcONB1og0ctUTb9Udk5eH1QoqxpjV_M9vBfZCAi0X6vTD1WmWhEof'); // Set this via environment variables
     
 } else {
     // Development configuration

@@ -161,6 +161,14 @@ $content = ob_start();
                                 <option value="0">Inactive</option>
                             </select>
                         </div>
+                        <div class="col-md-6">
+                            <label for="featured" class="form-label">Featured Product</label>
+                            <select class="form-select" id="featured" name="featured">
+                                <option value="0">No</option>
+                                <option value="1">Yes</option>
+                            </select>
+                            <small class="form-text text-muted">Featured products appear prominently on homepage</small>
+                        </div>
                         <div class="col-12">
                             <label for="description" class="form-label">Description</label>
                             <textarea class="form-control" id="description" name="description" rows="3"></textarea>
@@ -218,6 +226,8 @@ function editProduct(id) {
                 document.getElementById("category_id").value = product.categoryID || "";
                 document.getElementById("brand_id").value = product.brandID || "";
                 document.getElementById("stock").value = product.stock || product.stock_quantity || "";
+                // In the editProduct function, add this line after the status line:
+document.getElementById("featured").value = product.featured || "0";
                 document.getElementById("status").value = product.status || "";
                 document.getElementById("description").value = product.description || "";
                 

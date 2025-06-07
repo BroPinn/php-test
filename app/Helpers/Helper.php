@@ -213,14 +213,13 @@ class Helper {
         
         $cleanPath = ltrim($path, '/');
         
+        if (php_sapi_name() === 'cli-server') {
+            return '/uploads/' . $cleanPath;
+        }
+
         // Use APP_URL for consistent environment-aware URLs
         if (defined('APP_URL') && !empty(APP_URL)) {
             return APP_URL . '/public/uploads/' . $cleanPath;
-        }
-        
-        // Fallback for older implementations
-        if (php_sapi_name() === 'cli-server') {
-            return '/uploads/' . $cleanPath;
         }
         
         $basePath = defined('BASE_PATH') && !empty(BASE_PATH) ? BASE_PATH : '';
