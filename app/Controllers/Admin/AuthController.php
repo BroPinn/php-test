@@ -29,7 +29,7 @@ class AuthController extends BaseController {
     public function showLogin() {
         // If already logged in, redirect to dashboard
         if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in']) {
-            header('Location: ' . \App\Helpers\Helper::adminUrl('dashboard'));
+            header('Location: ' . Helper::adminUrl('dashboard'));
             exit;
         }
         
@@ -51,7 +51,7 @@ class AuthController extends BaseController {
      */
     public function login() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . \App\Helpers\Helper::adminUrl('login'));
+            header('Location: ' . Helper::adminUrl('login'));
             exit;
         }
         
@@ -60,7 +60,7 @@ class AuthController extends BaseController {
         
         if (empty($username) || empty($password)) {
             $_SESSION['flash_error'] = 'Please enter both username and password';
-            header('Location: ' . \App\Helpers\Helper::adminUrl('login'));
+            header('Location: ' . Helper::adminUrl('login'));
             exit;
         }
         
@@ -95,19 +95,19 @@ class AuthController extends BaseController {
                 $stmt->execute([$admin['adminID']]);
                 
                 $_SESSION['flash_success'] = 'Welcome back, ' . ($admin['firstName'] ?? 'Administrator');
-                header('Location: ' . \App\Helpers\Helper::adminUrl('dashboard'));
+                header('Location: ' . Helper::adminUrl('dashboard'));
                 exit;
                 
             } else {
                 $_SESSION['flash_error'] = 'Invalid username or password';
-                header('Location: ' . \App\Helpers\Helper::adminUrl('login'));
+                header('Location: ' . Helper::adminUrl('login'));
                 exit;
             }
             
         } catch (\Exception $e) {
             error_log("Admin login error: " . $e->getMessage());
             $_SESSION['flash_error'] = 'Database error: ' . $e->getMessage();
-            header('Location: ' . \App\Helpers\Helper::adminUrl('login'));
+            header('Location: ' . Helper::adminUrl('login'));
             exit;
         }
     }
@@ -202,7 +202,7 @@ class AuthController extends BaseController {
     public function changePassword() {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $_SESSION['flash_error'] = 'Invalid request method';
-            header('Location: ' . \App\Helpers\Helper::adminUrl('profile'));
+            header('Location: ' . Helper::adminUrl('profile'));
             exit;
         }
         
@@ -213,13 +213,13 @@ class AuthController extends BaseController {
         // Validate inputs
         if (empty($currentPassword) || empty($newPassword) || empty($confirmPassword)) {
             $_SESSION['flash_error'] = 'All password fields are required';
-            header('Location: ' . \App\Helpers\Helper::adminUrl('profile'));
+            header('Location: ' . Helper::adminUrl('profile'));
             exit;
         }
         
         if ($newPassword !== $confirmPassword) {
             $_SESSION['flash_error'] = 'New passwords do not match';
-            header('Location: ' . \App\Helpers\Helper::adminUrl('profile'));
+            header('Location: ' . Helper::adminUrl('profile'));
             exit;
         }
         
@@ -227,7 +227,7 @@ class AuthController extends BaseController {
         $strengthCheck = PasswordHelper::validateStrength($newPassword);
         if (!$strengthCheck['is_valid']) {
             $_SESSION['flash_error'] = 'Password not strong enough: ' . implode(', ', $strengthCheck['errors']);
-            header('Location: ' . \App\Helpers\Helper::adminUrl('profile'));
+            header('Location: ' . Helper::adminUrl('profile'));
             exit;
         }
         
@@ -241,7 +241,7 @@ class AuthController extends BaseController {
             
             if (!$admin || !PasswordHelper::verify($currentPassword, $admin['password'])) {
                 $_SESSION['flash_error'] = 'Current password is incorrect';
-                header('Location: ' . \App\Helpers\Helper::adminUrl('profile'));
+                header('Location: ' . Helper::adminUrl('profile'));
                 exit;
             }
             
@@ -261,7 +261,7 @@ class AuthController extends BaseController {
             $_SESSION['flash_error'] = 'An error occurred while changing password';
         }
         
-        header('Location: ' . \App\Helpers\Helper::adminUrl('profile'));
+        header('Location: ' . Helper::adminUrl('profile'));
         exit;
     }
     

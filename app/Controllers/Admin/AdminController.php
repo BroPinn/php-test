@@ -82,7 +82,7 @@ abstract class AdminController extends BaseController {
      */
     protected function redirectToLogin() {
         $_SESSION['flash_error'] = 'Please login to access admin area';
-        header('Location: /admin/login');
+        header('Location: ' . Helper::adminUrl('login'));
         exit;
     }
     
@@ -101,7 +101,7 @@ abstract class AdminController extends BaseController {
         unset($_SESSION['admin_last_activity']);
         
         $_SESSION['flash_success'] = 'You have been logged out';
-        header('Location: /admin/login');
+        header('Location: ' . Helper::adminUrl('login'));
         exit;
     }
     
@@ -144,7 +144,7 @@ abstract class AdminController extends BaseController {
     protected function requirePermission($permission) {
         if (!$this->checkPermission($permission)) {
             $_SESSION['flash_error'] = 'You do not have permission to access this resource';
-            header('Location: /admin/dashboard');
+            header('Location: ' . Helper::adminUrl('dashboard'));
             exit;
         }
     }
@@ -161,7 +161,7 @@ abstract class AdminController extends BaseController {
      */
     protected function setAdminBreadcrumbs($breadcrumbs) {
         $adminBreadcrumbs = [
-            ['title' => 'Dashboard', 'url' => '/admin/dashboard']
+            ['title' => 'Dashboard', 'url' => Helper::adminUrl('dashboard')]
         ];
         
         foreach ($breadcrumbs as $crumb) {
