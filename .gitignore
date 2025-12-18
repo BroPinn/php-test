@@ -1,6 +1,5 @@
 # Configuration & Database
 config/database.php
-config/app.php
 .env
 
 # User Uploads
