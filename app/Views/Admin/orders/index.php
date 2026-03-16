@@ -17,55 +17,79 @@ $content = ob_start();
 
 <!-- Statistics Cards -->
 <?php if (!empty($stats)): ?>
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-1">Total Orders</h6>
-                    <h3 class="stats-number mb-0"><?= number_format($stats['total_orders'] ?? 0) ?></h3>
-                </div>
-                <div class="stats-icon primary">
-                    <i class="fas fa-shopping-bag"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-1">Pending Orders</h6>
-                    <h3 class="stats-number mb-0"><?= number_format($stats['pending_orders'] ?? 0) ?></h3>
-                </div>
-                <div class="stats-icon warning">
-                    <i class="fas fa-clock"></i>
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-primary bubble-shadow-small">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Total Orders</p>
+                            <h4 class="card-title"><?= number_format($stats['total_orders'] ?? 0) ?></h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-1">Revenue</h6>
-                    <h3 class="stats-number mb-0">$<?= number_format($stats['total_revenue'] ?? 0, 2) ?></h3>
-                </div>
-                <div class="stats-icon success">
-                    <i class="fas fa-dollar-sign"></i>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-secondary bubble-shadow-small">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Pending Orders</p>
+                            <h4 class="card-title"><?= number_format($stats['pending_orders'] ?? 0) ?></h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-1">Avg. Order</h6>
-                    <h3 class="stats-number mb-0">$<?= number_format($stats['avg_order'] ?? 0, 2) ?></h3>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-success bubble-shadow-small">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Revenue</p>
+                            <h4 class="card-title">$<?= number_format($stats['total_revenue'] ?? 0, 2) ?></h4>
+                        </div>
+                    </div>
                 </div>
-                <div class="stats-icon info">
-                    <i class="fas fa-chart-line"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-info bubble-shadow-small">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Avg. Order</p>
+                            <h4 class="card-title">$<?= number_format($stats['avg_order'] ?? 0, 2) ?></h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -179,21 +203,23 @@ $content = ob_start();
                                     </small>
                                 </td>
                                 <td>
-                                    <a href="/admin/orders/view?id=<?= $order['orderID'] ?>" 
-                                       class="btn btn-sm btn-outline-primary btn-action" 
-                                       title="View Order">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <button class="btn btn-sm btn-outline-success btn-action" 
-                                            onclick="updateOrderStatus(<?= $order['orderID'] ?>)" 
-                                            title="Update Status">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-warning btn-action" 
-                                            onclick="updatePaymentStatus(<?= $order['orderID'] ?>)" 
-                                            title="Update Payment">
-                                        <i class="fas fa-credit-card"></i>
-                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <a href="/admin/orders/view?id=<?= $order['orderID'] ?>" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="View Order">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-success" 
+                                                onclick="updateOrderStatus(<?= $order['orderID'] ?>)" 
+                                                title="Update Status">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" 
+                                                onclick="updatePaymentStatus(<?= $order['orderID'] ?>)" 
+                                                title="Update Payment">
+                                            <i class="fas fa-credit-card"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

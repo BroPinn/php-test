@@ -1,178 +1,221 @@
-# OneStore - PHP E-commerce Project
+# OneStore
 
-A simple e-commerce web application built with PHP and MySQL featuring product management, categories, and an admin panel.
+OneStore is a small custom PHP MVC e-commerce app with a storefront, cart, checkout flow, and admin panel.
 
-## Features
+This project does not use Composer for bootstrapping. The current setup flow is:
 
-- Product catalog with categories
-- Admin panel for managing products and categories
-- Image slider for homepage
-- File upload functionality
-- Responsive design
-- MVC architecture
+1. Configure `.env`
+2. Run migrations
+3. Seed sample data
+4. Start the app
 
-## Prerequisites
+## Requirements
 
-Before running this project, make sure you have:
+- PHP 8.1 or higher
+- MySQL or MariaDB
+- A web server such as Laragon, Apache, or the built-in PHP server
 
-- **PHP 7.4 or higher**
-- **MySQL/MariaDB**
-- **Web server (Apache/Nginx)** or local development environment like XAMPP, WAMP, or Laragon
-- **Web browser**
+## Project Layout
 
-## Installation
-
-### 1. Clone or Download the Project
-
-```bash
-git clone <repository-url>
-# or download and extract the ZIP file
-```
-
-### 2. Database Setup
-
-1. **Create Database:**
-   - Open phpMyAdmin or your MySQL client
-   - Create a new database named `onestore_db`
-
-2. **Import Database:**
-   - Import the `data.sql` file into the `onestore_db` database
-   - This will create all necessary tables and insert sample data
-
-3. **Create Admin Table:**
-   - The admin table is referenced but not created in data.sql
-   - Run the following SQL to create it:
-
-```sql
-CREATE TABLE `tbl_admin` (
-  `adminID` int(11) NOT NULL AUTO_INCREMENT,
-  `username` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `gmail` varchar(255) DEFAULT NULL,
-  `img` longblob DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`adminID`),
-  UNIQUE KEY `username` (`username`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- Insert default admin user (password: admin123)
-INSERT INTO `tbl_admin` (`username`, `password`, `gmail`) VALUES 
-('admin', 'admin123', 'admin@onestore.com');
-```
-
-### 3. Configuration
-
-1. **Database Configuration:**
-   - Open `database.php`
-   - Update database credentials if needed:
-     - Host: `localhost` (default)
-     - Database: `onestore_db`
-     - Username: `root` (default)
-     - Password: `` (empty by default)
-
-### 4. File Permissions
-
-Ensure the following directories have write permissions:
-- `uploads/images/`
-- `uploads/slider/`
-
-### 5. Web Server Setup
-
-#### Using Laragon (Recommended for Windows):
-1. Place the project folder in `C:\laragon\www\`
-2. Start Laragon
-3. Access: `http://localhost/php-test` or `http://php-test.test`
-
-#### Using XAMPP:
-1. Place the project folder in `htdocs`
-2. Start Apache and MySQL
-3. Access: `http://localhost/php-test`
-
-#### Using Local PHP Server:
-```bash
-cd /path/to/php-test
-php -S localhost:8000
-```
-
-## Usage
-
-### Frontend
-- **Homepage:** `http://localhost/php-test` or `http://localhost:8000`
-- **Shop:** `?page=shop`
-- **Product Details:** `?page=productdetail&id=1`
-- **About:** `?page=about`
-- **Contact:** `?page=contact`
-
-### Admin Panel
-- **Access:** `http://localhost/php-test/admin`
-- **Login:** Use the admin credentials created in the database setup
-- **Features:**
-  - Product management (CRUD)
-  - Category management
-  - Admin profile management
-
-## File Structure
-
-```
+```text
 php-test/
-├── admin/              # Admin panel
-│   ├── auth/          # Admin authentication
-│   ├── controllers/   # Admin controllers
-│   ├── includes/      # Admin includes
-│   └── view/          # Admin views
-├── assets/
-│   └── js/           # JavaScript files
-├── controllers/       # Main controllers
-├── includes/         # Common includes
-├── models/           # Database models
-├── uploads/          # File uploads
-│   ├── images/       # Product images
-│   └── slider/       # Slider images
-├── views/            # Frontend views
-├── data.sql          # Database schema and data
-├── database.php      # Database connection
-├── function.php      # Utility functions
-├── index.php         # Main entry point
-└── router.php        # URL routing
+|- app/
+|  |- Controllers/
+|  |- Helpers/
+|  |- Models/
+|  `- Views/
+|- config/
+|- database/
+|  |- migrations/
+|  |- seeders/
+|  |- migrate.php
+|  `- seed.php
+|- public/
+|  |- assets/
+|  `- index.php
+|- .env.example
+|- index.php
+`- README.md
 ```
 
-## Default Credentials
+## Environment Setup
 
-- **Admin Username:** admin
-- **Admin Password:** admin123
+Copy the example environment file:
 
-## Development
+```powershell
+Copy-Item .env.example .env
+```
 
-### Adding New Pages
-1. Create a controller in `controllers/`
-2. Create a view in `views/`
-3. The router will automatically detect new pages
+Then update `.env` for your local setup.
 
-### Database Operations
-- Use the stored procedures defined in `data.sql`
-- Database connection is handled in `database.php`
+Minimum values to check:
 
-## Troubleshooting
+```env
+APP_ENV=development
+APP_DEBUG=true
 
-### Common Issues:
+APP_URL=http://localhost:8000
+BASE_PATH=
 
-1. **Database Connection Error:**
-   - Check MySQL service is running
-   - Verify database credentials in `database.php`
-   - Ensure `onestore_db` database exists
+DB_HOST=localhost
+DB_NAME=onestore_db
+DB_USER=root
+DB_PASS=
+DB_CHARSET=utf8mb4
+```
 
-2. **File Upload Issues:**
-   - Check write permissions on `uploads/` directories
-   - Verify PHP upload settings in `php.ini`
+### APP_URL and BASE_PATH
 
-3. **404 Errors:**
-   - Ensure web server is configured correctly
-   - Check `.htaccess` rules if using Apache
+Use values that match how you serve the project:
 
-4. **Admin Login Issues:**
-   - Verify admin table exists and has data
-   - Check admin credentials
+- Laragon at `http://localhost/php-test`
 
-## Support
+```env
+APP_URL=http://localhost/php-test
+BASE_PATH=/php-test
+```
 
-For issues and questions, please check the troubleshooting section or create an issue in the project repository. 
+- Laragon virtual host at `http://php-test.test`
+
+```env
+APP_URL=http://php-test.test
+BASE_PATH=
+```
+
+- PHP built-in server at `http://localhost:8000`
+
+```env
+APP_URL=http://localhost:8000
+BASE_PATH=
+```
+
+## Database Migrations
+
+The migration runner creates the database automatically if it does not exist.
+
+Run all pending migrations:
+
+```powershell
+php database/migrate.php
+```
+
+Reset everything and rebuild the schema from scratch:
+
+```powershell
+php database/migrate.php fresh
+```
+
+Rollback the most recent migration batch:
+
+```powershell
+php database/migrate.php rollback
+```
+
+Current migrations create these tables:
+
+- `tbl_admin`
+- `tbl_brand`
+- `tbl_category`
+- `tbl_product`
+- `tbl_customer`
+- `tbl_order`
+- `tbl_order_item`
+- `tbl_slider`
+- `tbl_cart`
+
+## Seed Sample Data
+
+Run all seeders:
+
+```powershell
+php database/seed.php
+```
+
+Run a single seeder:
+
+```powershell
+php database/seed.php Admin
+php database/seed.php Brand
+php database/seed.php Category
+php database/seed.php Customer
+php database/seed.php Product
+```
+
+Available seeders:
+
+- `AdminSeeder`
+- `BrandSeeder`
+- `CategorySeeder`
+- `CustomerSeeder`
+- `ProductSeeder`
+
+Recommended first-time setup:
+
+```powershell
+php database/migrate.php fresh
+php database/seed.php
+```
+
+## Run the Project
+
+### Option 1: Laragon
+
+1. Put the project in `C:\laragon\www\php-test`
+2. Start Apache and MySQL in Laragon
+3. Set `.env` to match your URL
+4. Open one of these URLs:
+   - `http://localhost/php-test`
+   - `http://php-test.test`
+
+### Option 2: PHP Built-in Server
+
+From the project root, run:
+
+```powershell
+php -S localhost:8000 -t public
+```
+
+Then open:
+
+```text
+http://localhost:8000
+```
+
+## Default Seeded Accounts
+
+Admin accounts:
+
+- Username: `admin`
+- Password: `admin123`
+
+- Username: `manager`
+- Password: `admin123`
+
+Sample customer accounts:
+
+- Email: `test@example.com`
+- Password: `password123`
+
+- Email: `john.doe@example.com`
+- Password: `password123`
+
+## Admin Panel
+
+Admin URL:
+
+```text
+/admin
+```
+
+Examples:
+
+- `http://localhost/php-test/admin`
+- `http://php-test.test/admin`
+- `http://localhost:8000/admin`
+
+## Notes
+
+- Use the migration and seeder scripts as the source of truth instead of the older SQL dump files.
+- Uploaded files are stored under `public/uploads/`.
+- Static assets are served from `public/assets/`.
+- If routes or assets look broken, double-check `APP_URL` and `BASE_PATH` in `.env`.

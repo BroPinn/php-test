@@ -20,42 +20,60 @@ $content = ob_start();
 
 <!-- Statistics Cards -->
 <?php if (!empty($stats)): ?>
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-1">Total Slides</h6>
-                    <h3 class="stats-number mb-0"><?= $stats['total_slides'] ?? 0 ?></h3>
-                </div>
-                <div class="stats-icon primary">
-                    <i class="fas fa-images"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-1">Active Slides</h6>
-                    <h3 class="stats-number mb-0"><?= $stats['active_slides'] ?? 0 ?></h3>
-                </div>
-                <div class="stats-icon success">
-                    <i class="fas fa-check-circle"></i>
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-md-4">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-primary bubble-shadow-small">
+                            <i class="fas fa-images"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Total Slides</p>
+                            <h4 class="card-title"><?= $stats['total_slides'] ?? 0 ?></h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-1">Display Limit</h6>
-                    <h3 class="stats-number mb-0">3 max</h3>
+    <div class="col-sm-6 col-md-4">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-success bubble-shadow-small">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Active Slides</p>
+                            <h4 class="card-title"><?= $stats['active_slides'] ?? 0 ?></h4>
+                        </div>
+                    </div>
                 </div>
-                <div class="stats-icon info">
-                    <i class="fas fa-eye"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-4">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-info bubble-shadow-small">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Display Limit</p>
+                            <h4 class="card-title">3 max</h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -117,7 +135,7 @@ $content = ob_start();
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge badge-status bg-<?= $slider['status'] == 1 ? 'success' : 'secondary' ?>">
+                                    <span class="badge bg-<?= $slider['status'] == 1 ? 'success' : 'secondary' ?>">
                                         <?= $slider['status'] == 1 ? 'Active' : 'Inactive' ?>
                                     </span>
                                     <?php if ($slider['status'] == 1 && $index >= 3): ?>
@@ -142,16 +160,18 @@ $content = ob_start();
                                     </small>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-primary btn-action" 
-                                            onclick="editSlider(<?= $slider['sliderID'] ?>)" 
-                                            title="Edit Slider">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger btn-action" 
-                                            onclick="deleteSlider(<?= $slider['sliderID'] ?>)" 
-                                            title="Delete Slider">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="editSlider(<?= $slider['sliderID'] ?>)" 
+                                                title="Edit Slider">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="deleteSlider(<?= $slider['sliderID'] ?>)" 
+                                                title="Delete Slider">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

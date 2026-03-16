@@ -17,55 +17,79 @@ $content = ob_start();
 
 <!-- Statistics Cards -->
 <?php if (!empty($stats)): ?>
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-1">Total Customers</h6>
-                    <h3 class="stats-number mb-0"><?= $stats['total_customers'] ?? 0 ?></h3>
-                </div>
-                <div class="stats-icon primary">
-                    <i class="fas fa-users"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-1">Verified Customers</h6>
-                    <h3 class="stats-number mb-0"><?= $stats['verified_customers'] ?? 0 ?></h3>
-                </div>
-                <div class="stats-icon success">
-                    <i class="fas fa-check-circle"></i>
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-primary bubble-shadow-small">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Total Customers</p>
+                            <h4 class="card-title"><?= $stats['total_customers'] ?? 0 ?></h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-1">New This Month</h6>
-                    <h3 class="stats-number mb-0"><?= $stats['new_customers_month'] ?? 0 ?></h3>
-                </div>
-                <div class="stats-icon info">
-                    <i class="fas fa-user-plus"></i>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-success bubble-shadow-small">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Verified Customers</p>
+                            <h4 class="card-title"><?= $stats['verified_customers'] ?? 0 ?></h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-1">Active Orders</h6>
-                    <h3 class="stats-number mb-0"><?= $stats['active_orders'] ?? 0 ?></h3>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-info bubble-shadow-small">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">New This Month</p>
+                            <h4 class="card-title"><?= $stats['new_customers_month'] ?? 0 ?></h4>
+                        </div>
+                    </div>
                 </div>
-                <div class="stats-icon warning">
-                    <i class="fas fa-shopping-cart"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-secondary bubble-shadow-small">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Active Orders</p>
+                            <h4 class="card-title"><?= $stats['active_orders'] ?? 0 ?></h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -177,23 +201,25 @@ $content = ob_start();
                                     </small>
                                 </td>
                                 <td>
-                                    <a href="/admin/customers/view?id=<?= $customer['customerID'] ?>" 
-                                       class="btn btn-sm btn-outline-primary btn-action" 
-                                       title="View Customer">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <button class="btn btn-sm btn-outline-success btn-action" 
-                                            onclick="editCustomer(<?= $customer['customerID'] ?>)" 
-                                            title="Edit Customer">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <?php if (!$customer['email_verified']): ?>
-                                        <button class="btn btn-sm btn-outline-info btn-action" 
-                                                onclick="verifyEmail(<?= $customer['customerID'] ?>)" 
-                                                title="Verify Email">
-                                            <i class="fas fa-check"></i>
+                                    <div class="d-flex gap-2">
+                                        <a href="/admin/customers/view?id=<?= $customer['customerID'] ?>" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="View Customer">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-success" 
+                                                onclick="editCustomer(<?= $customer['customerID'] ?>)" 
+                                                title="Edit Customer">
+                                            <i class="fas fa-edit"></i>
                                         </button>
-                                    <?php endif; ?>
+                                        <?php if (!$customer['email_verified']): ?>
+                                            <button class="btn btn-sm btn-outline-info" 
+                                                    onclick="verifyEmail(<?= $customer['customerID'] ?>)" 
+                                                    title="Verify Email">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

@@ -51,7 +51,7 @@ $content = ob_start();
                         $orderStatus = $order['order_status'] ?? $order['status'] ?? 'pending';
                         $color = $statusColors[$orderStatus] ?? 'secondary';
                         ?>
-                        <span class="badge bg-<?= $color ?> badge-status" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+                        <span class="badge bg-<?= $color ?>" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
                             <?= ucfirst(htmlspecialchars($orderStatus)) ?>
                         </span>
                     </div>
@@ -68,7 +68,7 @@ $content = ob_start();
                         $paymentStatus = $order['payment_status'] ?? 'pending';
                         $paymentColor = $paymentColors[$paymentStatus] ?? 'secondary';
                         ?>
-                        <span class="badge bg-<?= $paymentColor ?> badge-status" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+                        <span class="badge bg-<?= $paymentColor ?>" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
                             <?= ucfirst(htmlspecialchars($paymentStatus)) ?>
                         </span>
                     </div>

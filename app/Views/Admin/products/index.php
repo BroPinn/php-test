@@ -55,9 +55,11 @@ $content = ob_start();
                                         <?php if (!empty($product['image_path'])): ?>
                                             <img src="<?= Helper::upload($product['image_path']) ?>" 
                                                  alt="<?= htmlspecialchars($product['name'] ?? 'Product') ?>" 
-                                                 class="product-image me-2">
+                                                 class="me-2 rounded"
+                                                 style="width: 50px; height: 50px; object-fit: cover;">
                                         <?php else: ?>
-                                            <div class="product-image me-2 bg-light d-flex align-items-center justify-content-center">
+                                            <div class="me-2 rounded bg-light d-flex align-items-center justify-content-center"
+                                                 style="width: 50px; height: 50px;">
                                                 <i class="fas fa-image text-muted"></i>
                                             </div>
                                         <?php endif; ?>
@@ -80,7 +82,7 @@ $content = ob_start();
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge badge-status bg-<?= ($product['status'] ?? 0) == 1 ? 'success' : 'secondary' ?>">
+                                    <span class="badge bg-<?= ($product['status'] ?? 0) == 1 ? 'success' : 'secondary' ?>">
                                         <?= ($product['status'] ?? 0) == 1 ? 'Active' : 'Inactive' ?>
                                     </span>
                                 </td>
@@ -90,16 +92,18 @@ $content = ob_start();
                                     </small>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-primary btn-action" 
-                                            onclick="editProduct(<?= $product['productID'] ?>)" 
-                                            title="Edit Product">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger btn-action" 
-                                            onclick="deleteProduct(<?= $product['productID'] ?>)" 
-                                            title="Delete Product">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="editProduct(<?= $product['productID'] ?>)" 
+                                                title="Edit Product">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="deleteProduct(<?= $product['productID'] ?>)" 
+                                                title="Delete Product">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

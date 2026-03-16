@@ -6,80 +6,98 @@ $content = ob_start();
 ?>
 
 <!-- Welcome Header -->
-<div class="welcome-header">
-    <div class="row align-items-center">
-        <div class="col">
-            <h2>Welcome back, <?= htmlspecialchars($admin_user['name'] ?? 'Admin') ?>!</h2>
-            <p class="text-muted mb-0">Here's what's happening with your store today.</p>
-        </div>
-        <div class="col-auto">
-            <span class="badge bg-success">Online</span>
-            <small class="text-muted ms-2"><?= date('M d, Y') ?></small>
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-4">
+        <div class="row align-items-center">
+            <div class="col">
+                <h2 class="mb-1">Welcome back, <?= htmlspecialchars($admin_user['name'] ?? 'Admin') ?>!</h2>
+                <p class="text-muted mb-0">Here's what's happening with your store today.</p>
+            </div>
+            <div class="col-auto">
+                <span class="badge bg-success">Online</span>
+                <small class="text-muted ms-2"><?= date('M d, Y') ?></small>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Statistics Cards -->
 <div class="row g-4 mb-4">
-    <div class="col-xl-3 col-md-6">
-        <div class="stats-card">
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <div class="stats-icon primary">
-                        <i class="fas fa-box"></i>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-primary bubble-shadow-small">
+                            <i class="fas fa-box"></i>
+                        </div>
                     </div>
-                </div>
-                <div class="col">
-                    <h3 class="stats-number"><?= $stats['total_products'] ?? 0 ?></h3>
-                    <p class="stats-label">Total Products</p>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Total Products</p>
+                            <h4 class="card-title"><?= $stats['total_products'] ?? 0 ?></h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="col-xl-3 col-md-6">
-        <div class="stats-card">
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <div class="stats-icon success">
-                        <i class="fas fa-shopping-cart"></i>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-secondary bubble-shadow-small">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
                     </div>
-                </div>
-                <div class="col">
-                    <h3 class="stats-number"><?= $stats['total_orders'] ?? 0 ?></h3>
-                    <p class="stats-label">Total Orders</p>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Total Orders</p>
+                            <h4 class="card-title"><?= $stats['total_orders'] ?? 0 ?></h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="col-xl-3 col-md-6">
-        <div class="stats-card">
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <div class="stats-icon warning">
-                        <i class="fas fa-users"></i>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-info bubble-shadow-small">
+                            <i class="fas fa-users"></i>
+                        </div>
                     </div>
-                </div>
-                <div class="col">
-                    <h3 class="stats-number"><?= $stats['total_customers'] ?? 0 ?></h3>
-                    <p class="stats-label">Total Customers</p>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Total Customers</p>
+                            <h4 class="card-title"><?= $stats['total_customers'] ?? 0 ?></h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="col-xl-3 col-md-6">
-        <div class="stats-card">
-            <div class="row align-items-center">
-                <div class="col-auto">
-                    <div class="stats-icon info">
-                        <i class="fas fa-dollar-sign"></i>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-success bubble-shadow-small">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
                     </div>
-                </div>
-                <div class="col">
-                    <h3 class="stats-number">$<?= number_format($stats['total_revenue'] ?? 0, 2) ?></h3>
-                    <p class="stats-label">Total Revenue</p>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Total Revenue</p>
+                            <h4 class="card-title">$<?= number_format($stats['total_revenue'] ?? 0, 2) ?></h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

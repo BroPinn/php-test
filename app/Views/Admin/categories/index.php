@@ -20,42 +20,60 @@ $content = ob_start();
 
 <!-- Statistics Cards -->
 <?php if (!empty($stats)): ?>
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-1">Total Categories</h6>
-                    <h3 class="stats-number mb-0"><?= $stats['total_categories'] ?? 0 ?></h3>
-                </div>
-                <div class="stats-icon primary">
-                    <i class="fas fa-tags"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-1">Active Categories</h6>
-                    <h3 class="stats-number mb-0"><?= $stats['active_categories'] ?? 0 ?></h3>
-                </div>
-                <div class="stats-icon success">
-                    <i class="fas fa-check-circle"></i>
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-md-4">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-primary bubble-shadow-small">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Total Categories</p>
+                            <h4 class="card-title"><?= $stats['total_categories'] ?? 0 ?></h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="stats-card">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-muted mb-1">Total Products</h6>
-                    <h3 class="stats-number mb-0"><?= $stats['products_in_categories'] ?? 0 ?></h3>
+    <div class="col-sm-6 col-md-4">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-success bubble-shadow-small">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Active Categories</p>
+                            <h4 class="card-title"><?= $stats['active_categories'] ?? 0 ?></h4>
+                        </div>
+                    </div>
                 </div>
-                <div class="stats-icon info">
-                    <i class="fas fa-boxes"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-4">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-info bubble-shadow-small">
+                            <i class="fas fa-boxes"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Total Products</p>
+                            <h4 class="card-title"><?= $stats['products_in_categories'] ?? 0 ?></h4>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -97,9 +115,11 @@ $content = ob_start();
                                         <?php if (!empty($category['image'])): ?>
                                             <img src="<?= Helper::upload($category['image']) ?>" 
                                                  alt="<?= htmlspecialchars($category['name'] ?? 'Unnamed Category') ?>" 
-                                                 class="product-image me-2">
+                                                 class="me-2 rounded"
+                                                 style="width: 50px; height: 50px; object-fit: cover;">
                                         <?php else: ?>
-                                            <div class="product-image me-2 bg-light d-flex align-items-center justify-content-center">
+                                            <div class="me-2 rounded bg-light d-flex align-items-center justify-content-center"
+                                                 style="width: 50px; height: 50px;">
                                                 <i class="fas fa-image text-muted"></i>
                                             </div>
                                         <?php endif; ?>
@@ -115,7 +135,7 @@ $content = ob_start();
                                     <span class="badge bg-info"><?= $category['product_count'] ?? 0 ?> products</span>
                                 </td>
                                 <td>
-                                    <span class="badge badge-status bg-<?= $category['status'] == 1 ? 'success' : 'secondary' ?>">
+                                    <span class="badge bg-<?= $category['status'] == 1 ? 'success' : 'secondary' ?>">
                                         <?= $category['status'] == 1 ? 'Active' : 'Inactive' ?>
                                     </span>
                                 </td>
@@ -125,17 +145,19 @@ $content = ob_start();
                                     </small>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-primary btn-action" 
-                                            onclick="editCategory(<?= $category['categoryID'] ?>)" 
-                                            title="Edit Category">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger btn-action" 
-                                            onclick="deleteCategory(<?= $category['categoryID'] ?>)" 
-                                            title="Delete Category"
-                                            <?= ($category['product_count'] ?? 0) > 0 ? 'disabled' : '' ?>>
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="editCategory(<?= $category['categoryID'] ?>)" 
+                                                title="Edit Category">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" 
+                                                onclick="deleteCategory(<?= $category['categoryID'] ?>)" 
+                                                title="Delete Category"
+                                                <?= ($category['product_count'] ?? 0) > 0 ? 'disabled' : '' ?>>
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

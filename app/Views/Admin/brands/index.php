@@ -15,62 +15,78 @@ $content = ob_start();
 </div>
 
 <!-- Statistics Cards -->
-<div class="row mb-4">
-    <div class="col-xl-3 col-md-6">
-        <div class="card stat-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h5 class="card-title text-muted">Total Brands</h5>
-                        <h2 class="text-primary"><?= $stats['total_brands'] ?? 0 ?></h2>
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-primary bubble-shadow-small">
+                            <i class="fas fa-tags"></i>
+                        </div>
                     </div>
-                    <div class="stat-icon">
-                        <i class="fas fa-tags"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="card stat-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h5 class="card-title text-muted">Active Brands</h5>
-                        <h2 class="text-success"><?= $stats['active_brands'] ?? 0 ?></h2>
-                    </div>
-                    <div class="stat-icon">
-                        <i class="fas fa-check-circle"></i>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Total Brands</p>
+                            <h4 class="card-title"><?= $stats['total_brands'] ?? 0 ?></h4>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="card stat-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h5 class="card-title text-muted">Branded Products</h5>
-                        <h2 class="text-info"><?= $stats['products_with_brands'] ?? 0 ?></h2>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-success bubble-shadow-small">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
                     </div>
-                    <div class="stat-icon">
-                        <i class="fas fa-box"></i>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Active Brands</p>
+                            <h4 class="card-title"><?= $stats['active_brands'] ?? 0 ?></h4>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="card stat-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h5 class="card-title text-muted">Unbranded Products</h5>
-                        <h2 class="text-warning"><?= $stats['unbranded_products'] ?? 0 ?></h2>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-info bubble-shadow-small">
+                            <i class="fas fa-box"></i>
+                        </div>
                     </div>
-                    <div class="stat-icon">
-                        <i class="fas fa-exclamation-triangle"></i>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Branded Products</p>
+                            <h4 class="card-title"><?= $stats['products_with_brands'] ?? 0 ?></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-secondary bubble-shadow-small">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Unbranded Products</p>
+                            <h4 class="card-title"><?= $stats['unbranded_products'] ?? 0 ?></h4>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -140,9 +156,11 @@ $content = ob_start();
                                         <?php if (!empty($brand['logo'])): ?>
                                             <img src="<?= Helper::upload($brand['logo']) ?>" 
                                                  alt="<?= htmlspecialchars($brand['name'] ?? 'Unnamed Brand') ?>" 
-                                                 class="product-image me-2">
+                                                 class="me-2 rounded"
+                                                 style="width: 50px; height: 50px; object-fit: cover;">
                                         <?php else: ?>
-                                            <div class="product-image me-2 bg-light d-flex align-items-center justify-content-center">
+                                            <div class="me-2 rounded bg-light d-flex align-items-center justify-content-center"
+                                                 style="width: 50px; height: 50px;">
                                                 <i class="fas fa-image text-muted"></i>
                                             </div>
                                         <?php endif; ?>
