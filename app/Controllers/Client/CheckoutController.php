@@ -8,45 +8,48 @@ use App\Models\Product;
 use App\Helpers\Helper;
 use Exception;
 
-class CheckoutController extends ClientController {
+class CheckoutController extends ClientController
+{
     private $cartModel;
     private $orderModel;
     private $customerModel;
     private $productModel;
-    
-    public function __construct() {
+
+    public function __construct()
+    {
         parent::__construct();
         $this->cartModel = new Cart();
         $this->orderModel = new Order();
         $this->customerModel = new Customer();
         $this->productModel = new Product();
     }
-    
+
     /**
      * Show checkout page
      */
-    public function index() {
+    public function index()
+    {
         $cartItems = $this->getCartItems();
-        
+
         if (empty($cartItems)) {
             // Instead of showing an error, redirect to cart page which will show nice empty state
             $this->redirect('/cart');
             return;
         }
-        
+
         $subtotal = $this->calculateSubtotal($cartItems);
         $shipping = 10.00; // Fixed shipping for now
         $tax = $subtotal * 0.1; // 10% tax
         $total = $subtotal + $shipping + $tax;
-        
+
         // Get customer info if logged in
         $customer = null;
         $user = $this->getCurrentUser();
-        
+
         if ($user) {
             // Try to get full customer data with addresses
             $customer = $this->customerModel->getCustomerWithAddresses($user['id']);
-            
+
             // If that fails, create customer data from session
             if (!$customer) {
                 $customer = [
@@ -59,7 +62,7 @@ class CheckoutController extends ClientController {
                 ];
             }
         }
-        
+
         // Set page data
         $this->setData('cart_items', $cartItems);
         $this->setData('subtotal', $subtotal);
@@ -68,30 +71,31 @@ class CheckoutController extends ClientController {
         $this->setData('total', $total);
         $this->setData('customer', $customer);
         $this->setData('paypal_client_id', $this->getPayPalClientId());
-        
+
         // Set page metadata
         $this->setTitle('Checkout');
         $this->setMeta('Complete your order checkout', 'checkout, order, payment');
-        
+
         // Add breadcrumbs
         $this->addBreadcrumb('Shop', '/shop');
         $this->addBreadcrumb('Checkout');
-        
+
         $this->view('pages.checkout');
     }
-    
+
     /**
      * Process checkout
      */
-    public function process() {
+    public function process()
+    {
         try {
             $cartItems = $this->getCartItems();
-            
+
             if (empty($cartItems)) {
                 echo json_encode(['success' => false, 'message' => 'Cart is empty']);
                 return;
             }
-            
+
             // Validate stock availability
             foreach ($cartItems as $item) {
                 $product = $this->productModel->find($item['productID']);
@@ -100,7 +104,7 @@ class CheckoutController extends ClientController {
                     return;
                 }
             }
-            
+
             // Get form data
             $billingData = [
                 'firstName' => $_POST['billing_first_name'] ?? '',
@@ -114,10 +118,10 @@ class CheckoutController extends ClientController {
                 'postal_code' => $_POST['billing_postal_code'] ?? '',
                 'country' => $_POST['billing_country'] ?? 'US'
             ];
-            
+
             // Get payment method
             $paymentMethod = $_POST['payment_method'] ?? 'paypal';
-            
+
             $shippingData = $billingData; // Default to billing
             if (isset($_POST['different_shipping']) && $_POST['different_shipping']) {
                 $shippingData = [
@@ -131,13 +135,13 @@ class CheckoutController extends ClientController {
                     'country' => $_POST['shipping_country'] ?? 'US'
                 ];
             }
-            
+
             // Calculate totals
             $subtotal = $this->calculateSubtotal($cartItems);
             $shipping = 10.00;
             $tax = $subtotal * 0.1;
             $total = $subtotal + $shipping + $tax;
-            
+
             // Create order
             $user = $this->getCurrentUser();
             $orderData = [
@@ -155,14 +159,14 @@ class CheckoutController extends ClientController {
                 'payment_status' => 'pending',
                 'notes' => $_POST['order_notes'] ?? null
             ];
-            
+
             $orderID = $this->orderModel->createOrder($orderData);
-            
+
             if (!$orderID) {
                 echo json_encode(['success' => false, 'message' => 'Failed to create order']);
                 return;
             }
-            
+
             // Add order items
             $orderItems = [];
             foreach ($cartItems as $item) {
@@ -175,20 +179,20 @@ class CheckoutController extends ClientController {
                     'total' => $item['total']
                 ];
             }
-            
+
             $this->orderModel->addOrderItems($orderID, $orderItems);
-            
+
             // Handle different payment methods
             if ($paymentMethod === 'cod') {
                 // For Cash on Delivery, mark as confirmed and redirect to confirmation
                 $this->orderModel->updateStatus($orderID, 'confirmed');
-                
+
                 // Clear cart
                 $user = $this->getCurrentUser();
                 $customerID = $user ? $user['id'] : null;
                 $sessionId = $customerID ? null : session_id();
                 $this->cartModel->clearCart($customerID, $sessionId);
-                
+
                 echo json_encode([
                     'success' => true,
                     'order_id' => $orderID,
@@ -199,7 +203,7 @@ class CheckoutController extends ClientController {
                 // For PayPal, mark as processing (payment already captured)
                 $this->orderModel->updateStatus($orderID, 'processing');
                 $this->orderModel->updatePaymentStatus($orderID, 'paid');
-                
+
                 // Update product stock
                 foreach ($cartItems as $item) {
                     $product = $this->productModel->find($item['productID']);
@@ -208,13 +212,13 @@ class CheckoutController extends ClientController {
                         $this->productModel->update($item['productID'], ['stock_quantity' => max(0, $newStock)]);
                     }
                 }
-                
+
                 // Clear cart
                 $user = $this->getCurrentUser();
                 $customerID = $user ? $user['id'] : null;
                 $sessionId = $customerID ? null : session_id();
                 $this->cartModel->clearCart($customerID, $sessionId);
-                
+
                 echo json_encode([
                     'success' => true,
                     'order_id' => $orderID,
@@ -222,63 +226,65 @@ class CheckoutController extends ClientController {
                     'message' => 'PayPal payment successful!'
                 ]);
             }
-            
+
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'An error occurred during checkout']);
         }
     }
-    
+
     /**
      * Show PayPal payment page
      */
-    public function showPayPal() {
+    public function showPayPal()
+    {
         $orderID = $_SESSION['checkout_order_id'] ?? null;
-        
+
         if (!$orderID) {
             Helper::flash('error', 'No active order found');
             $this->redirect('/cart');
             return;
         }
-        
+
         $order = $this->orderModel->getOrderWithItems($orderID);
         if (!$order) {
             Helper::flash('error', 'Order not found');
             $this->redirect('/cart');
             return;
         }
-        
+
         $this->setData('order', $order);
         $this->setData('paypal_client_id', $this->getPayPalClientId());
         $this->setData('page_title', 'PayPal Payment - ' . APP_NAME);
-        
+
         $this->render('pages.paypal-checkout');
     }
-    
+
     /**
      * Handle PayPal success
      */
-    public function paypalSuccess() {
+    public function paypalSuccess()
+    {
         header('Content-Type: application/json');
-        
+
         try {
             $input = json_decode(file_get_contents('php://input'), true);
             $paymentID = $input['paymentID'] ?? null;
             $payerID = $input['payerID'] ?? null;
             $orderID = $_SESSION['checkout_order_id'] ?? null;
-            
+
             if (!$paymentID || !$payerID || !$orderID) {
                 echo json_encode(['success' => false, 'message' => 'Missing payment information']);
                 return;
             }
-            
+
             // Verify payment with PayPal
             $paymentDetails = $this->verifyPayPalPayment($paymentID, $payerID);
-            
+
             if ($paymentDetails && $paymentDetails['state'] === 'approved') {
                 // Update order status
                 $this->orderModel->updatePaymentStatus($orderID, 'completed', $paymentID);
                 $this->orderModel->updateStatus($orderID, 'processing');
-                
+
                 // Update product stock
                 $order = $this->orderModel->getOrderWithItems($orderID);
                 foreach ($order['items'] as $item) {
@@ -288,16 +294,16 @@ class CheckoutController extends ClientController {
                         $this->productModel->update($item['productID'], ['stock_quantity' => max(0, $newStock)]);
                     }
                 }
-                
+
                 // Clear cart
                 $user = $this->getCurrentUser();
                 $customerID = $user ? $user['id'] : null;
                 $sessionId = $customerID ? null : session_id();
                 $this->cartModel->clearCart($customerID, $sessionId);
-                
+
                 // Clear session
                 unset($_SESSION['checkout_order_id']);
-                
+
                 echo json_encode([
                     'success' => true,
                     'message' => 'Payment successful',
@@ -306,24 +312,25 @@ class CheckoutController extends ClientController {
             } else {
                 echo json_encode(['success' => false, 'message' => 'Payment verification failed']);
             }
-            
+
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => 'Payment processing error']);
         }
     }
-    
+
     /**
      * Show order confirmation
      */
-    public function orderConfirmation($orderID) {
+    public function orderConfirmation($orderID)
+    {
         $order = $this->orderModel->getOrderWithItems($orderID);
-        
+
         if (!$order) {
             Helper::flash('error', 'Order not found');
             $this->redirect('/');
             return;
         }
-        
+
         // Check if user can view this order
         $user = $this->getCurrentUser();
         if ($order['customerID'] && (!$user || $user['id'] != $order['customerID'])) {
@@ -331,61 +338,71 @@ class CheckoutController extends ClientController {
             $this->redirect('/');
             return;
         }
-        
+
         // Set page data
         $this->setData('order', $order);
-        
+
         // Set page metadata
         $this->setTitle('Order Confirmation - Order #' . $order['order_number']);
         $this->setMeta('Your order has been confirmed. Thank you for shopping with us!', 'order, confirmation, receipt');
-        
+
         // Add breadcrumbs
         $this->addBreadcrumb('Shop', '/shop');
         $this->addBreadcrumb('Order Confirmation');
-        
+
         $this->view('pages.order-confirmation');
     }
-    
+
     /**
      * Get cart items for current user/session
      */
-    private function getCartItems() {
+    private function getCartItems()
+    {
+        // Ensure session is started before accessing session_id()
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         $user = $this->getCurrentUser();
         $customerID = $user ? $user['id'] : null;
         $sessionId = $customerID ? null : session_id();
-        
+
         return $this->cartModel->getCartItems($customerID, $sessionId);
     }
-    
+
     /**
      * Calculate subtotal
      */
-    private function calculateSubtotal($cartItems) {
+    private function calculateSubtotal($cartItems)
+    {
         $subtotal = 0;
         foreach ($cartItems as $item) {
             $subtotal += $item['total'];
         }
         return $subtotal;
     }
-    
+
     /**
      * Generate order number
      */
-    private function generateOrderNumber() {
+    private function generateOrderNumber()
+    {
         return 'ORD-' . date('YmdHis') . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
     }
-    
+
     /**
      * Get PayPal client ID
      */
-    private function getPayPalClientId() {
+    private function getPayPalClientId()
+    {
         return defined('PAYPAL_CLIENT_ID') ? PAYPAL_CLIENT_ID : '';
     }
-    
+
     /**
      * Verify PayPal payment
      */
-    private function verifyPayPalPayment($paymentID, $payerID) {
+    private function verifyPayPalPayment($paymentID, $payerID)
+    {
         // TODO: Implement actual PayPal API verification
         // For demo purposes, return approved
         return [
@@ -394,11 +411,12 @@ class CheckoutController extends ClientController {
             'payer' => ['payer_info' => ['payer_id' => $payerID]]
         ];
     }
-    
+
     /**
      * Format address
      */
-    private function formatAddress($addressData) {
+    private function formatAddress($addressData)
+    {
         return trim(implode(', ', array_filter([
             $addressData['firstName'] . ' ' . $addressData['lastName'],
             $addressData['address1'],
@@ -411,24 +429,25 @@ class CheckoutController extends ClientController {
             !empty($addressData['email']) ? 'Email: ' . $addressData['email'] : ''
         ])));
     }
-    
+
     /**
      * Debug customer data - TEMPORARY
      */
-    public function debugCustomer() {
+    public function debugCustomer()
+    {
         header('Content-Type: application/json');
-        
+
         $user = $this->getCurrentUser();
         $customer = null;
-        
+
         if ($user) {
             $customer = $this->customerModel->getCustomerWithAddresses($user['id']);
         }
-        
+
         $debug = [
             'session_data' => [
                 'customer_id' => $_SESSION['customer_id'] ?? 'not set',
-                'customer_name' => $_SESSION['customer_name'] ?? 'not set', 
+                'customer_name' => $_SESSION['customer_name'] ?? 'not set',
                 'customer_email' => $_SESSION['customer_email'] ?? 'not set'
             ],
             'getCurrentUser_result' => $user,
@@ -436,8 +455,8 @@ class CheckoutController extends ClientController {
             'session_id' => session_id(),
             'all_session' => $_SESSION
         ];
-        
+
         echo json_encode($debug, JSON_PRETTY_PRINT);
         exit;
     }
-} 
+}

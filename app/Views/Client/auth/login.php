@@ -30,7 +30,8 @@
 
                         <div class="p-b-25">
                             <label class="stext-102 cl3 p-b-5">Password *</label>
-                            <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20" type="password" name="password" required>
+                            <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20" type="password" name="password"
+                                required>
                         </div>
 
                         <div class="flex-w flex-sb-m p-b-25">
@@ -40,13 +41,14 @@
                                     Remember me
                                 </label>
                             </div>
-                            
-                            <a href="/forgot-password" class="stext-113 cl6 hov-cl1 trans-04">
+
+                            <a href="<?= Helper::url('/forgot-password') ?>" class="stext-113 cl6 hov-cl1 trans-04">
                                 Forgot password?
                             </a>
                         </div>
 
-                        <button type="submit" class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer w-full">
+                        <button type="submit"
+                            class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer w-full">
                             Sign In
                         </button>
 
@@ -54,7 +56,7 @@
                             <span class="stext-113 cl6">
                                 Don't have an account?
                             </span>
-                            <a href="/onestore/register" class="stext-113 cl2 hov-cl1 trans-04">
+                            <a href="<?= Helper::url('/register') ?>" class="stext-113 cl2 hov-cl1 trans-04">
                                 Create Account
                             </a>
                         </div>
@@ -66,29 +68,29 @@
 </div>
 
 <style>
-.alert {
-    border-radius: 4px;
-    padding: 12px;
-    margin-bottom: 20px;
-}
+    .alert {
+        border-radius: 4px;
+        padding: 12px;
+        margin-bottom: 20px;
+    }
 
-.alert-danger {
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-    color: #721c24;
-}
+    .alert-danger {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+    }
 
-.alert-success {
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-    color: #155724;
-}
+    .alert-success {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+    }
 
-.justify-content-center {
-    justify-content: center;
-}
+    .justify-content-center {
+        justify-content: center;
+    }
 
-.w-full {
-    width: 100%;
-}
-</style> 
+    .w-full {
+        width: 100%;
+    }
+</style>

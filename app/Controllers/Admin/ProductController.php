@@ -1,427 +1,373 @@
 <?php
 namespace App\Controllers\Admin;
 
+use App\Helpers\Database;
 use Exception;
 
-class ProductController extends AdminController {
-    
-    protected function getViewPath($view) {
+class ProductController extends AdminController
+{
+    protected function getViewPath($view)
+    {
         return __DIR__ . '/../../Views/Admin/' . $view . '.php';
     }
-    
-    public function index() {
+
+    public function index()
+    {
         $this->setAdminTitle('Product Management');
         $this->requirePermission('manage_products');
-        
+
         try {
             $pdo = $this->connectDatabase();
-            
-            if (!$pdo) {
+            if (!$pdo)
                 throw new Exception('Database connection failed');
-            }
-            
-            // Get all products with category and brand information - sorted by ID
-            $sql = "SELECT p.*, 
-                           p.productName as name,
-                           p.stock_quantity as stock,
-                           c.catName as category_name, 
-                           b.brandName as brand_name 
-                    FROM tbl_product p 
-                    LEFT JOIN tbl_category c ON p.categoryID = c.categoryID 
-                    LEFT JOIN tbl_brand b ON p.brandID = b.brandID 
-                    ORDER BY p.productID ASC";
-            $stmt = $pdo->query($sql);
-            $products = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-            
-            // Get categories for the modal
-            $categoriesStmt = $pdo->query("SELECT categoryID, catName as name FROM tbl_category WHERE status = 1 ORDER BY catName");
-            $categories = $categoriesStmt->fetchAll(\PDO::FETCH_ASSOC);
-            
-            // Get brands for the modal
-            $brandsStmt = $pdo->query("SELECT brandID, brandName as name FROM tbl_brand WHERE status = 1 ORDER BY brandName");
-            $brands = $brandsStmt->fetchAll(\PDO::FETCH_ASSOC);
-            
-            $data = [
+
+            $products = $pdo->query("
+                SELECT p.*, p.productName as name, c.catName as category_name, b.brandName as brand_name
+                FROM tbl_product p
+                LEFT JOIN tbl_category c ON p.categoryID = c.categoryID
+                LEFT JOIN tbl_brand b ON p.brandID = b.brandID
+                ORDER BY p.productID ASC
+            ")->fetchAll(\PDO::FETCH_ASSOC);
+
+            $categories = $pdo->query("SELECT categoryID, catName as name FROM tbl_category WHERE status = 1 ORDER BY catName")->fetchAll(\PDO::FETCH_ASSOC);
+            $brands = $pdo->query("SELECT brandID, brandName as name FROM tbl_brand WHERE status = 1 ORDER BY brandName")->fetchAll(\PDO::FETCH_ASSOC);
+
+            $this->adminView('products/index', [
                 'title' => 'Product Management - OneStore Admin',
                 'products' => $products,
                 'categories' => $categories,
                 'brands' => $brands,
-                'admin_user' => $this->adminUser,
-                'success' => $_SESSION['flash_success'] ?? null,
-                'error' => $_SESSION['flash_error'] ?? null
-            ];
-            
-            // Clear flash messages
-            unset($_SESSION['flash_success']);
-            unset($_SESSION['flash_error']);
-            
-            $this->adminView('products/index', $data);
-            
-        } catch (\Exception $e) {
+                'success' => $this->getFlash('success'),
+                'error' => $this->getFlash('error')
+            ]);
+
+        } catch (Exception $e) {
             error_log("Product listing error: " . $e->getMessage());
-            $_SESSION['flash_error'] = 'Error loading products: ' . $e->getMessage();
-            header('Location: /admin/dashboard');
-            exit;
+            $this->flashRedirect('error', 'Error loading products: ' . $e->getMessage(), '/admin/dashboard');
         }
     }
-    
-    public function create() {
+
+    public function create()
+    {
         $this->setAdminTitle('Add New Product');
         $this->requirePermission('manage_products');
-        
-        $data = [
+
+        $this->adminView('products/create', [
             'title' => 'Add New Product - OneStore Admin',
             'admin_user' => $this->adminUser,
-            'error' => $_SESSION['flash_error'] ?? null
-        ];
-        
-        unset($_SESSION['flash_error']);
-        
-        $this->adminView('products/create', $data);
+            'error' => $this->getFlash('error')
+        ]);
     }
-    
-    public function store() {
+
+    public function store()
+    {
         $this->requirePermission('manage_products');
-        
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /admin/products');
-            exit;
+        if (!$this->isPost())
+            return $this->redirect('/admin/products');
+
+        $data = $this->getProductData();
+
+        if (empty($data['name']) || $data['price'] <= 0 || !$data['categoryID']) {
+            return $this->jsonError('Product name, valid price, and category are required');
         }
-        
-        $productName = trim($_POST['name'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        $shortDescription = trim($_POST['short_description'] ?? '');
-        $price = floatval($_POST['price'] ?? 0);
-        $salePrice = floatval($_POST['sale_price'] ?? 0);
-        $categoryID = intval($_POST['category_id'] ?? 0);
-        $brandID = intval($_POST['brand_id'] ?? 0);
-        $sku = trim($_POST['sku'] ?? '');
-        $stockQuantity = intval($_POST['stock'] ?? 0);
-        $status = intval($_POST['status'] ?? 1);
-        $featured = intval($_POST['featured'] ?? 0);
-        
-        if (empty($productName) || $price <= 0 || !$categoryID) {
-            $_SESSION['flash_error'] = 'Product name, valid price, and category are required';
-            header('Location: /admin/products');
-            exit;
-        }
-        
+
         try {
             $pdo = $this->connectDatabase();
-            
-            if (!$pdo) {
+            if (!$pdo)
                 throw new Exception('Database connection failed');
-            }
-            
-            // Handle image upload
-            $imagePath = null;
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-                $uploadResult = $this->handleImageUpload($_FILES['image']);
-                if ($uploadResult['success']) {
-                    $imagePath = $uploadResult['filename'];
-                } else {
-                    $_SESSION['flash_error'] = 'Image upload failed: ' . $uploadResult['error'];
-                    header('Location: /admin/products');
-                    exit;
-                }
-            }
-            
-            // Generate slug from product name
-            $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $productName)));
-            
-            $stmt = $pdo->prepare("INSERT INTO tbl_product (categoryID, brandID, productName, slug, description, short_description, price, sale_price, sku, stock_quantity, image_path, status, featured, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-            $stmt->execute([$categoryID, $brandID ?: null, $productName, $slug, $description, $shortDescription, $price, $salePrice ?: null, $sku, $stockQuantity, $imagePath, $status, $featured]);
-            
+
+            $imagePath = $this->processImageUpload();
+
+            $slug = $this->createSlug($data['name']);
+            $stmt = $pdo->prepare("
+                INSERT INTO tbl_product 
+                (categoryID, brandID, productName, slug, description, short_description, price, sale_price, sku, stock_quantity, image_path, status, featured, created_at) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+            ");
+            $stmt->execute([
+                $data['categoryID'],
+                $data['brandID'] ?: null,
+                $data['name'],
+                $slug,
+                $data['description'],
+                $data['shortDescription'],
+                $data['price'],
+                $data['salePrice'] ?: null,
+                $data['sku'],
+                $data['stock'],
+                $imagePath,
+                $data['status'],
+                $data['featured']
+            ]);
+
             $_SESSION['flash_success'] = 'Product created successfully';
-            header('Content-Type: application/json');
-            echo json_encode(['success' => true, 'message' => 'Product created successfully']);
-            exit;
-            
-        } catch (\Exception $e) {
+            $this->jsonSuccess('Product created successfully');
+
+        } catch (Exception $e) {
             error_log("Product creation error: " . $e->getMessage());
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Error creating product: ' . $e->getMessage()]);
-            exit;
+            $this->jsonError('Error creating product: ' . $e->getMessage());
         }
     }
-    
-    public function edit() {
+
+    public function edit()
+    {
         $this->setAdminTitle('Edit Product');
         $this->requirePermission('manage_products');
-        
+
         $id = intval($_GET['id'] ?? 0);
-        
-        if (!$id) {
-            $_SESSION['flash_error'] = 'Product not found';
-            header('Location: /admin/products');
-            exit;
-        }
-        
+        if (!$id)
+            return $this->flashRedirect('error', 'Product not found', '/admin/products');
+
         try {
             $pdo = $this->connectDatabase();
-            
             $stmt = $pdo->prepare("SELECT * FROM products WHERE id = ?");
             $stmt->execute([$id]);
             $product = $stmt->fetch(\PDO::FETCH_ASSOC);
-            
-            if (!$product) {
-                $_SESSION['flash_error'] = 'Product not found';
-                header('Location: /admin/products');
-                exit;
-            }
-            
-            $data = [
+
+            if (!$product)
+                return $this->flashRedirect('error', 'Product not found', '/admin/products');
+
+            $this->adminView('products/edit', [
                 'title' => 'Edit Product - OneStore Admin',
                 'product' => $product,
                 'admin_user' => $this->adminUser,
-                'error' => $_SESSION['flash_error'] ?? null
-            ];
-            
-            unset($_SESSION['flash_error']);
-            
-            $this->adminView('products/edit', $data);
-            
-        } catch (\Exception $e) {
+                'error' => $this->getFlash('error')
+            ]);
+
+        } catch (Exception $e) {
             error_log("Product edit error: " . $e->getMessage());
-            $_SESSION['flash_error'] = 'Error loading product';
-            header('Location: /admin/products');
-            exit;
+            $this->flashRedirect('error', 'Error loading product', '/admin/products');
         }
     }
-    
-    public function update() {
+
+    public function update()
+    {
         $this->requirePermission('manage_products');
-        
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /admin/products');
-            exit;
-        }
-        
-        // Get productID from URL parameter
+        if (!$this->isPost())
+            return $this->redirect('/admin/products');
+
         $productID = intval($_GET['id'] ?? 0);
-        $productName = trim($_POST['name'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        $shortDescription = trim($_POST['short_description'] ?? '');
-        $price = floatval($_POST['price'] ?? 0);
-        $salePrice = floatval($_POST['sale_price'] ?? 0);
-        $categoryID = intval($_POST['category_id'] ?? 0);
-        $brandID = intval($_POST['brand_id'] ?? 0);
-        $sku = trim($_POST['sku'] ?? '');
-        $stockQuantity = intval($_POST['stock'] ?? 0);
-        $status = intval($_POST['status'] ?? 1);
-        $featured = intval($_POST['featured'] ?? 0);
-        
-        if (!$productID || empty($productName) || $price <= 0 || !$categoryID) {
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Invalid product data']);
-            exit;
+        $data = $this->getProductData();
+
+        if (!$productID || empty($data['name']) || $data['price'] <= 0 || !$data['categoryID']) {
+            return $this->jsonError('Invalid product data');
         }
-        
+
         try {
             $pdo = $this->connectDatabase();
-            
-            // Get current product data
+
             $stmt = $pdo->prepare("SELECT image_path FROM tbl_product WHERE productID = ?");
             $stmt->execute([$productID]);
             $currentProduct = $stmt->fetch(\PDO::FETCH_ASSOC);
-            
+
             $imagePath = $currentProduct['image_path'] ?? null;
-            
-            // Handle image upload
+
+            // Handle new image upload
             if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-                // Delete old image if it exists
-                if ($imagePath && file_exists(__DIR__ . "/../../../public/uploads/$imagePath")) {
-                    unlink(__DIR__ . "/../../../public/uploads/$imagePath");
-                }
-                
-                $uploadResult = $this->handleImageUpload($_FILES['image']);
-                if ($uploadResult['success']) {
-                    $imagePath = $uploadResult['filename'];
+                if ($imagePath)
+                    @unlink(__DIR__ . "/../../../public/uploads/$imagePath");
+                $result = $this->handleImageUpload($_FILES['image']);
+                if ($result['success']) {
+                    $imagePath = $result['filename'];
                 } else {
-                    header('Content-Type: application/json');
-                    echo json_encode(['success' => false, 'message' => 'Image upload failed: ' . $uploadResult['error']]);
-                    exit;
+                    return $this->jsonError('Image upload failed: ' . $result['error']);
                 }
             }
-            
-            // Generate slug from product name
-            $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $productName)));
-            
-            $stmt = $pdo->prepare("UPDATE tbl_product SET categoryID = ?, brandID = ?, productName = ?, slug = ?, description = ?, short_description = ?, price = ?, sale_price = ?, sku = ?, stock_quantity = ?, image_path = ?, status = ?, featured = ?, updated_at = NOW() WHERE productID = ?");
-            $stmt->execute([$categoryID, $brandID ?: null, $productName, $slug, $description, $shortDescription, $price, $salePrice ?: null, $sku, $stockQuantity, $imagePath, $status, $featured, $productID]);
-            
+
+            $slug = $this->createSlug($data['name']);
+            $stmt = $pdo->prepare("
+                UPDATE tbl_product SET 
+                categoryID = ?, brandID = ?, productName = ?, slug = ?, description = ?, 
+                short_description = ?, price = ?, sale_price = ?, sku = ?, stock_quantity = ?, 
+                image_path = ?, status = ?, featured = ?, updated_at = NOW() 
+                WHERE productID = ?
+            ");
+            $stmt->execute([
+                $data['categoryID'],
+                $data['brandID'] ?: null,
+                $data['name'],
+                $slug,
+                $data['description'],
+                $data['shortDescription'],
+                $data['price'],
+                $data['salePrice'] ?: null,
+                $data['sku'],
+                $data['stock'],
+                $imagePath,
+                $data['status'],
+                $data['featured'],
+                $productID
+            ]);
+
             $_SESSION['flash_success'] = 'Product updated successfully';
-            header('Content-Type: application/json');
-            echo json_encode(['success' => true, 'message' => 'Product updated successfully']);
-            exit;
-            
-        } catch (\Exception $e) {
+            $this->jsonSuccess('Product updated successfully');
+
+        } catch (Exception $e) {
             error_log("Product update error: " . $e->getMessage());
-            header('Content-Type: application/json');
-            echo json_encode(['success' => false, 'message' => 'Error updating product: ' . $e->getMessage()]);
-            exit;
+            $this->jsonError('Error updating product: ' . $e->getMessage());
         }
     }
-    
-    public function delete() {
+
+    public function delete()
+    {
         $this->requirePermission('manage_products');
-        
         $productID = intval($_GET['id'] ?? 0);
-        
-        if (!$productID) {
-            $_SESSION['flash_error'] = 'Product not found';
-            header('Location: /admin/products');
-            exit;
-        }
-        
+
+        if (!$productID)
+            return $this->flashRedirect('error', 'Product not found', '/admin/products');
+
         try {
             $pdo = $this->connectDatabase();
-            
             $stmt = $pdo->prepare("DELETE FROM tbl_product WHERE productID = ?");
             $stmt->execute([$productID]);
-            
-            $_SESSION['flash_success'] = 'Product deleted successfully';
-            header('Location: /admin/products');
-            exit;
-            
-        } catch (\Exception $e) {
+
+            $this->flashRedirect('success', 'Product deleted successfully', '/admin/products');
+
+        } catch (Exception $e) {
             error_log("Product deletion error: " . $e->getMessage());
-            $_SESSION['flash_error'] = 'Error deleting product: ' . $e->getMessage();
-            header('Location: /admin/products');
-            exit;
+            $this->flashRedirect('error', 'Error deleting product: ' . $e->getMessage(), '/admin/products');
         }
     }
-    
-    public function get() {
+
+    public function get()
+    {
         $this->requirePermission('manage_products');
-        
         $productID = intval($_GET['id'] ?? 0);
-        
-        if (!$productID) {
-            http_response_code(404);
-            echo json_encode(['error' => 'Product not found']);
-            exit;
-        }
-        
+
+        if (!$productID)
+            return $this->jsonError('Product not found', 404);
+
         try {
             $pdo = $this->connectDatabase();
-            
-            $stmt = $pdo->prepare("SELECT *, 
-                                          productName as name, 
-                                          stock_quantity as stock 
-                                   FROM tbl_product 
-                                   WHERE productID = ?");
+            $stmt = $pdo->prepare("SELECT *, productName as name, stock_quantity as stock FROM tbl_product WHERE productID = ?");
             $stmt->execute([$productID]);
             $product = $stmt->fetch(\PDO::FETCH_ASSOC);
-            
-            if (!$product) {
-                http_response_code(404);
-                echo json_encode(['error' => 'Product not found']);
-                exit;
-            }
-            
+
+            if (!$product)
+                return $this->jsonError('Product not found', 404);
+
             header('Content-Type: application/json');
             echo json_encode(['success' => true, 'product' => $product]);
             exit;
-            
-        } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Database error']);
+
+        } catch (Exception $e) {
+            $this->jsonError('Database error', 500);
+        }
+    }
+
+    // =========================================================================
+    // HELPER METHODS
+    // =========================================================================
+
+
+
+    private function getProductData(): array
+    {
+        return [
+            'name' => trim($_POST['name'] ?? ''),
+            'description' => trim($_POST['description'] ?? ''),
+            'shortDescription' => trim($_POST['short_description'] ?? ''),
+            'price' => floatval($_POST['price'] ?? 0),
+            'salePrice' => floatval($_POST['sale_price'] ?? 0),
+            'categoryID' => intval($_POST['category_id'] ?? 0),
+            'brandID' => intval($_POST['brand_id'] ?? 0),
+            'sku' => trim($_POST['sku'] ?? ''),
+            'stock' => intval($_POST['stock'] ?? 0),
+            'status' => intval($_POST['status'] ?? 1),
+            'featured' => intval($_POST['featured'] ?? 0)
+        ];
+    }
+
+    private function createSlug(string $text): string
+    {
+        return strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $text)));
+    }
+
+    private function processImageUpload(): ?string
+    {
+        if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+            return null;
+        }
+        $result = $this->handleImageUpload($_FILES['image']);
+        if (!$result['success']) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Image upload failed: ' . $result['error']]);
             exit;
         }
+        return $result['filename'];
     }
-    
-    /**
-     * Handle image upload
-     */
-    private function handleImageUpload($file) {
+
+    private function getFlash(string $key): ?string
+    {
+        $value = $_SESSION["flash_$key"] ?? null;
+        unset($_SESSION["flash_$key"]);
+        return $value;
+    }
+
+    private function flashRedirect(string $type, string $message, string $url): void
+    {
+        $_SESSION["flash_$type"] = $message;
+        header("Location: $url");
+        exit;
+    }
+
+
+
+    private function jsonSuccess(string $message): void
+    {
+        header('Content-Type: application/json');
+        echo json_encode(['success' => true, 'message' => $message]);
+        exit;
+    }
+
+    private function jsonError(string $message, int $code = 200): void
+    {
+        if ($code !== 200)
+            http_response_code($code);
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'message' => $message]);
+        exit;
+    }
+
+    private function handleImageUpload($file): array
+    {
         $allowedTypes = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-        $maxSize = 5 * 1024 * 1024; // 5MB
-        
-        // Log upload attempt
-        error_log("Upload attempt - File: " . print_r($file, true));
-        
-        // Check if file was uploaded
+        $maxSize = 5 * 1024 * 1024;
+
         if ($file['error'] !== UPLOAD_ERR_OK) {
-            $errorMsg = "File upload error code: " . $file['error'];
-            error_log($errorMsg);
-            return ['success' => false, 'error' => $errorMsg];
+            return ['success' => false, 'error' => 'Upload error code: ' . $file['error']];
         }
-        
-        // Check file size
         if ($file['size'] > $maxSize) {
-            $errorMsg = "File size too large: {$file['size']} bytes (max 5MB)";
-            error_log($errorMsg);
-            return ['success' => false, 'error' => 'File size too large (max 5MB)'];
+            return ['success' => false, 'error' => 'File too large (max 5MB)'];
         }
-        
-        // Check file type
-        $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        if (!in_array($fileExtension, $allowedTypes)) {
-            $errorMsg = "Invalid file type: $fileExtension";
-            error_log($errorMsg);
-            return ['success' => false, 'error' => 'Invalid file type. Allowed: ' . implode(', ', $allowedTypes)];
+
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowedTypes)) {
+            return ['success' => false, 'error' => 'Invalid file type'];
         }
-        
-        // Create upload directory if it doesn't exist
+
         $uploadDir = __DIR__ . '/../../../public/uploads/products/';
-        if (!is_dir($uploadDir)) {
-            error_log("Creating upload directory: $uploadDir");
+        if (!is_dir($uploadDir))
             mkdir($uploadDir, 0755, true);
-        }
-        
-        // Check directory permissions
         if (!is_writable($uploadDir)) {
-            $errorMsg = "Upload directory not writable: $uploadDir";
-            error_log($errorMsg);
             return ['success' => false, 'error' => 'Upload directory not writable'];
         }
-        
-        // Generate unique filename
-        $filename = uniqid() . '_' . time() . '.' . $fileExtension;
-        $uploadPath = $uploadDir . $filename;
-        
-        error_log("Attempting to move file from {$file['tmp_name']} to $uploadPath");
-        
-        // Check if tmp file exists
-        if (!file_exists($file['tmp_name'])) {
-            $errorMsg = "Temporary file does not exist: {$file['tmp_name']}";
-            error_log($errorMsg);
-            return ['success' => false, 'error' => 'Temporary file not found'];
+
+        $filename = uniqid() . '_' . time() . '.' . $ext;
+        if (move_uploaded_file($file['tmp_name'], $uploadDir . $filename)) {
+            return ['success' => true, 'filename' => 'products/' . $filename];
         }
-        
-        // Move uploaded file
-        if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
-            error_log("File upload success: $uploadPath");
-            // Verify file was actually created and has content
-            if (file_exists($uploadPath) && filesize($uploadPath) > 0) {
-                error_log("File verified: " . filesize($uploadPath) . " bytes");
-                // Return the full path including subdirectory so URLs work correctly
-                return ['success' => true, 'filename' => 'products/' . $filename];
-            } else {
-                $errorMsg = "File moved but verification failed: $uploadPath";
-                error_log($errorMsg);
-                return ['success' => false, 'error' => 'File upload verification failed'];
-            }
-        } else {
-            $errorMsg = "Failed to move uploaded file from {$file['tmp_name']} to $uploadPath";
-            error_log($errorMsg);
-            return ['success' => false, 'error' => 'Failed to move uploaded file'];
-        }
+        return ['success' => false, 'error' => 'Failed to move file'];
     }
-    
-    /**
-     * Render admin view
-     */
-    protected function adminView($view, $data = []) {
+
+    protected function adminView($view, $data = [])
+    {
         extract($data);
-        
         $viewPath = $this->getViewPath($view);
-        
         if (file_exists($viewPath)) {
             include $viewPath;
         } else {
             echo "Admin view not found: $view";
         }
     }
-} 
+}

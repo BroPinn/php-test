@@ -6,289 +6,196 @@ use App\Models\Product;
 use App\Helpers\Helper;
 use Exception;
 
-class CartController extends ClientController {
-    private $cartModel;
-    private $productModel;
-    
-    public function __construct() {
+/**
+ * CartController - Handles shopping cart operations
+ * 
+ * Endpoints:
+ * - GET  /cart       - Display cart page
+ * - GET  /cart/get   - Get cart data (AJAX)
+ * - POST /cart/add   - Add item to cart
+ * - POST /cart/update - Update item quantity
+ * - POST /cart/remove - Remove item from cart
+ * - POST /cart/clear  - Clear entire cart
+ */
+class CartController extends ClientController
+{
+    private Cart $cartModel;
+    private Product $productModel;
+
+    public function __construct()
+    {
         parent::__construct();
         $this->cartModel = new Cart();
         $this->productModel = new Product();
     }
-    
-    /**
-     * Display cart page
-     */
-    public function index() {
-        $cartItems = $this->getCartItems();
-        $subtotal = $this->calculateSubtotal($cartItems);
-        $shipping = 10.00; // Fixed shipping for now
-        $total = $subtotal + $shipping;
-        
-        // If cart is empty, clear any existing error flash messages
-        // We want to show our nice empty cart state instead of flash errors
-        if (empty($cartItems)) {
+
+
+    public function index()
+    {
+        $cartData = $this->getCartData();
+
+        // Clear error flash if cart is empty (show nice empty state instead)
+        if (empty($cartData['items'])) {
             unset($_SESSION['flash']['error']);
-            // Also clear any specific cart empty messages
             $this->data['flash_messages'] = [];
         }
-        
-        $this->setData('cart_items', $cartItems);
-        $this->setData('subtotal', $subtotal);
-        $this->setData('shipping', $shipping);
-        $this->setData('total', $total);
+
+        $this->setData('cart_items', $cartData['items']);
+        $this->setData('subtotal', $cartData['subtotal']);
+        $this->setData('shipping', $cartData['shipping']);
+        $this->setData('total', $cartData['total']);
         $this->setData('page_title', 'Shopping Cart - ' . APP_NAME);
-        
+
         $this->view('pages.cart');
     }
-    
-    /**
-     * Add item to cart (AJAX)
-     */
-    public function add() {
-        // Ensure session is started
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        
-        header('Content-Type: application/json');
-        
+
+    public function get()
+    {
+        $this->ensureSession();
+        $this->jsonResponse();
+
         try {
-            $input = json_decode(file_get_contents('php://input'), true);
-            $productID = $input['product_id'] ?? null;
-            $quantity = $input['quantity'] ?? 1;
-            
-            if (!$productID) {
-                echo json_encode(['success' => false, 'message' => 'Product ID is required']);
-                return;
-            }
-            
-            // Validate product exists and has stock
-            $product = $this->productModel->find($productID);
-            if (!$product) {
-                echo json_encode(['success' => false, 'message' => 'Product not found']);
-                return;
-            }
-            
-            if ($product['stock_quantity'] < $quantity) {
-                echo json_encode(['success' => false, 'message' => 'Insufficient stock']);
-                return;
-            }
-            
-            // Get customer ID or session ID
-            $user = $this->getCurrentUser();
-            $customerID = $user ? $user['id'] : null;
-            $sessionId = $customerID ? null : session_id();
-            
-            // Add to cart
-            $result = $this->cartModel->addItem($customerID, $sessionId, $productID, $quantity);
-            
-            if ($result) {
-                $cartItems = $this->getCartItems();
-                $cartCount = array_reduce($cartItems, function($sum, $item) {
-                    return $sum + $item['quantity'];
-                }, 0);
-                $cartTotal = $this->calculateSubtotal($cartItems);
-                
-                echo json_encode([
-                    'success' => true,
-                    'message' => 'Item added to cart',
-                    'cart_count' => $cartCount,
-                    'cart_total' => Helper::formatCurrency($cartTotal)
-                ]);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Failed to add item to cart']);
-            }
-            
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()]);
-        }
-    }
-    
-    /**
-     * Update cart item quantity (AJAX)
-     */
-    public function update() {
-        // Ensure session is started
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        
-        header('Content-Type: application/json');
-        
-        try {
-            $input = json_decode(file_get_contents('php://input'), true);
-            $cartID = $input['cart_id'] ?? null;
-            $productID = $input['productID'] ?? $input['product_id'] ?? null;
-            $quantity = intval($input['quantity'] ?? 1);
-            
-            // Handle update by product ID or cart ID
-            if ($productID && !$cartID) {
-                // Find cart item by product ID
-                $user = $this->getCurrentUser();
-                $customerID = $user ? $user['id'] : null;
-                $sessionId = $customerID ? null : session_id();
-                
-                // If quantity is 0, remove the item
-                if ($quantity <= 0) {
-                    $result = $this->cartModel->removeByProduct($customerID, $sessionId, $productID);
-                    if ($result) {
-                        $cartItems = $this->getCartItems();
-                        $cartCount = array_reduce($cartItems, function($sum, $item) {
-                            return $sum + $item['quantity'];
-                        }, 0);
-                        $cartTotal = $this->calculateSubtotal($cartItems);
-                        
-                        echo json_encode([
-                            'success' => true,
-                            'message' => 'Item removed from cart',
-                            'action' => 'removed',
-                            'cart_count' => $cartCount,
-                            'cart_total' => Helper::formatCurrency($cartTotal),
-                            'cart_items' => $cartItems
-                        ]);
-                    } else {
-                        echo json_encode(['success' => false, 'message' => 'Failed to remove item']);
-                    }
-                    return;
-                }
-                
-                // Update by product ID
-                $result = $this->cartModel->updateByProduct($customerID, $sessionId, $productID, $quantity);
-            } else if ($cartID) {
-                // If quantity is 0, remove the item
-                if ($quantity <= 0) {
-                    $result = $this->cartModel->removeItem($cartID);
-                    if ($result) {
-                        $cartItems = $this->getCartItems();
-                        $cartCount = array_reduce($cartItems, function($sum, $item) {
-                            return $sum + $item['quantity'];
-                        }, 0);
-                        $cartTotal = $this->calculateSubtotal($cartItems);
-                        
-                        echo json_encode([
-                            'success' => true,
-                            'message' => 'Item removed from cart',
-                            'action' => 'removed',
-                            'cart_count' => $cartCount,
-                            'cart_total' => Helper::formatCurrency($cartTotal),
-                            'cart_items' => $cartItems
-                        ]);
-                    } else {
-                        echo json_encode(['success' => false, 'message' => 'Failed to remove item']);
-                    }
-                    return;
-                }
-                
-                // Update by cart ID
-                $result = $this->cartModel->updateQuantity($cartID, $quantity);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Cart ID or Product ID is required']);
-                return;
-            }
-            
-            if ($result) {
-                $user = $this->getCurrentUser();
-                $customerID = $user ? $user['id'] : null;
-                $sessionId = $customerID ? null : session_id();
-                
-                $cartItems = $this->getCartItems();
-                $cartCount = array_reduce($cartItems, function($sum, $item) {
-                    return $sum + $item['quantity'];
-                }, 0);
-                $cartTotal = $this->calculateSubtotal($cartItems);
-                
-                echo json_encode([
-                    'success' => true,
-                    'message' => 'Cart updated',
-                    'action' => 'updated',
-                    'cart_count' => $cartCount,
-                    'cart_total' => Helper::formatCurrency($cartTotal),
-                    'cart_items' => $cartItems
-                ]);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'Failed to update cart']);
-            }
-            
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()]);
-        }
-    }
-    
-    /**
-     * Remove item from cart (AJAX)
-     */
-    public function remove() {
-        header('Content-Type: application/json');
-        
-        try {
-            $input = json_decode(file_get_contents('php://input'), true);
-            $cartID = $input['cart_id'] ?? null;
-            $productID = $input['product_id'] ?? null;
-            
-            if (!$cartID && !$productID) {
-                echo json_encode(['success' => false, 'message' => 'Cart ID or Product ID is required']);
-                return;
-            }
-            
-            $result = false;
-            
-            if ($cartID) {
-                // Remove by cart ID (more specific)
-                $result = $this->cartModel->removeItem($cartID);
-                if (!$result) {
-                    echo json_encode(['success' => false, 'message' => 'Failed to remove item by cart ID: ' . $cartID]);
-                    return;
-                }
-            } else {
-                // Remove by product ID (for backward compatibility)
-                $user = $this->getCurrentUser();
-                $customerID = $user ? $user['id'] : null;
-                $sessionId = $customerID ? null : session_id();
-                $result = $this->cartModel->removeByProduct($customerID, $sessionId, $productID);
-                if (!$result) {
-                    echo json_encode(['success' => false, 'message' => 'Failed to remove item by product ID: ' . $productID]);
-                    return;
-                }
-            }
-            
-            // Get updated cart data
-            $user = $this->getCurrentUser();
-            $customerID = $user ? $user['id'] : null;
-            $sessionId = $customerID ? null : session_id();
-            
-            $cartItems = $this->getCartItems();
-            $cartCount = array_reduce($cartItems, function($sum, $item) {
-                return $sum + $item['quantity'];
-            }, 0);
-            $cartTotal = $this->calculateSubtotal($cartItems);
-            
+            $cartData = $this->getCartData();
+
             echo json_encode([
                 'success' => true,
-                'message' => 'Item removed from cart',
-                'cart_count' => $cartCount,
-                'cart_total' => Helper::formatCurrency($cartTotal)
+                'cart_items' => $cartData['items'],
+                'cart_totals' => [
+                    'subtotal' => $cartData['subtotal'],
+                    'shipping' => $cartData['shipping'],
+                    'total' => $cartData['total'],
+                    'total_items' => $cartData['count']
+                ]
             ]);
-            
         } catch (Exception $e) {
-            error_log("Cart remove error: " . $e->getMessage());
-            echo json_encode(['success' => false, 'message' => 'An error occurred: ' . $e->getMessage()]);
+            $this->errorResponse('Error loading cart', $e);
+        }
+
+        exit;
+    }
+
+    public function add()
+    {
+        $this->ensureSession();
+        $this->jsonResponse();
+
+        try {
+            $input = $this->getJsonInput();
+            $productID = $input['product_id'] ?? null;
+            $quantity = (int) ($input['quantity'] ?? 1);
+
+            // Validate
+            if (!$productID) {
+                return $this->error('Product ID is required');
+            }
+
+            $product = $this->productModel->find($productID);
+            if (!$product) {
+                return $this->error('Product not found');
+            }
+
+            if ($product['stock_quantity'] < $quantity) {
+                return $this->error('Insufficient stock');
+            }
+
+            // Add to cart
+            [$customerID, $sessionId] = $this->getCartIdentifier();
+            $result = $this->cartModel->addItem($customerID, $sessionId, $productID, $quantity);
+
+            if ($result) {
+                $cartData = $this->getCartData();
+                $this->success('Item added to cart', $cartData);
+            } else {
+                $this->error('Failed to add item to cart');
+            }
+
+        } catch (Exception $e) {
+            $this->errorResponse('An error occurred', $e);
         }
     }
-    
-    /**
-     * Clear entire cart
-     */
-    public function clear() {
-        header('Content-Type: application/json');
-        
+
+    public function update()
+    {
+        $this->ensureSession();
+        $this->jsonResponse();
+
         try {
-            $user = $this->getCurrentUser();
-            $customerID = $user ? $user['id'] : null;
-            $sessionId = $customerID ? null : session_id();
-            
+            $input = $this->getJsonInput();
+            $cartID = $input['cart_id'] ?? null;
+            $productID = $input['productID'] ?? $input['product_id'] ?? null;
+            $quantity = (int) ($input['quantity'] ?? 1);
+
+            [$customerID, $sessionId] = $this->getCartIdentifier();
+
+            // Remove if quantity is 0 or less
+            if ($quantity <= 0) {
+                $result = $this->removeItemInternal($cartID, $productID, $customerID, $sessionId);
+                if ($result) {
+                    $cartData = $this->getCartData();
+                    $this->success('Item removed from cart', $cartData, 'removed');
+                } else {
+                    $this->error('Failed to remove item');
+                }
+                return;
+            }
+
+            // Update quantity
+            if ($productID && !$cartID) {
+                $result = $this->cartModel->updateByProduct($customerID, $sessionId, $productID, $quantity);
+            } elseif ($cartID) {
+                $result = $this->cartModel->updateQuantity($cartID, $quantity);
+            } else {
+                return $this->error('Cart ID or Product ID is required');
+            }
+
+            if ($result) {
+                $cartData = $this->getCartData();
+                $this->success('Cart updated', $cartData, 'updated');
+            } else {
+                $this->error('Failed to update cart');
+            }
+
+        } catch (Exception $e) {
+            $this->errorResponse('An error occurred', $e);
+        }
+    }
+
+    public function remove()
+    {
+        $this->jsonResponse();
+
+        try {
+            $input = $this->getJsonInput();
+            $cartID = $input['cart_id'] ?? null;
+            $productID = $input['product_id'] ?? null;
+
+            if (!$cartID && !$productID) {
+                return $this->error('Cart ID or Product ID is required');
+            }
+
+            [$customerID, $sessionId] = $this->getCartIdentifier();
+            $result = $this->removeItemInternal($cartID, $productID, $customerID, $sessionId);
+
+            if ($result) {
+                $cartData = $this->getCartData();
+                $this->success('Item removed from cart', $cartData);
+            } else {
+                $this->error('Failed to remove item');
+            }
+
+        } catch (Exception $e) {
+            $this->errorResponse('An error occurred', $e);
+        }
+    }
+
+    public function clear()
+    {
+        $this->jsonResponse();
+
+        try {
+            [$customerID, $sessionId] = $this->getCartIdentifier();
             $result = $this->cartModel->clearCart($customerID, $sessionId);
-            
+
             if ($result) {
                 echo json_encode([
                     'success' => true,
@@ -297,79 +204,124 @@ class CartController extends ClientController {
                     'cart_total' => Helper::formatCurrency(0)
                 ]);
             } else {
-                echo json_encode(['success' => false, 'message' => 'Failed to clear cart']);
+                $this->error('Failed to clear cart');
             }
-            
+
         } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'An error occurred']);
+            $this->errorResponse('An error occurred', $e);
         }
     }
-    
+
+
+
     /**
-     * Get cart data (AJAX)
+     * Ensure session is started
      */
-    public function get() {
-        // Ensure session is started
+    private function ensureSession(): void
+    {
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
         }
-        
-        header('Content-Type: application/json');
-        
-        try {
-            $cartItems = $this->getCartItems();
-            $subtotal = $this->calculateSubtotal($cartItems);
-            $shipping = $subtotal > 100 ? 0 : 10.00; // Free shipping over $100
-            $total = $subtotal + $shipping;
-            
-            // Use reduce-style calculation for total items
-            $totalItems = array_reduce($cartItems, function($sum, $item) {
-                return $sum + $item['quantity'];
-            }, 0);
-            
-            echo json_encode([
-                'success' => true,
-                'cart_items' => $cartItems,
-                'cart_totals' => [
-                    'subtotal' => $subtotal,
-                    'shipping' => $shipping,
-                    'total' => $total,
-                    'total_items' => $totalItems
-                ]
-            ]);
-            
-        } catch (Exception $e) {
-            error_log("Cart get error: " . $e->getMessage());
-            echo json_encode([
-                'success' => false, 
-                'message' => 'Error loading cart',
-                'cart_items' => [],
-                'cart_totals' => ['subtotal' => 0, 'shipping' => 0, 'total' => 0, 'total_items' => 0]
-            ]);
-        }
-        
-        exit;
     }
-    
+
     /**
-     * Get cart items for current user/session
+     * Set JSON response header
      */
-    private function getCartItems() {
+    private function jsonResponse(): void
+    {
+        header('Content-Type: application/json');
+    }
+
+    /**
+     * Get JSON input from request body
+     */
+    private function getJsonInput(): array
+    {
+        return json_decode(file_get_contents('php://input'), true) ?? [];
+    }
+
+    /**
+     * Get customer ID and session ID for cart operations
+     * @return array [customerID, sessionId]
+     */
+    private function getCartIdentifier(): array
+    {
         $user = $this->getCurrentUser();
         $customerID = $user ? $user['id'] : null;
         $sessionId = $customerID ? null : session_id();
-        
-        return $this->cartModel->getCartItems($customerID, $sessionId);
+        return [$customerID, $sessionId];
     }
-    
+
     /**
-     * Calculate subtotal
+     * Get complete cart data
      */
-    private function calculateSubtotal($cartItems) {
-        $subtotal = 0;
-        foreach ($cartItems as $item) {
-            $subtotal += $item['total'];
-        }
-        return $subtotal;
+    private function getCartData(): array
+    {
+        [$customerID, $sessionId] = $this->getCartIdentifier();
+        $items = $this->cartModel->getCartItems($customerID, $sessionId);
+
+        $subtotal = array_sum(array_column($items, 'total'));
+        $shipping = $subtotal > 100 ? 0 : 10.00; // Free shipping over $100
+        $count = array_sum(array_column($items, 'quantity'));
+
+        return [
+            'items' => $items,
+            'subtotal' => $subtotal,
+            'shipping' => $shipping,
+            'total' => $subtotal + $shipping,
+            'count' => $count
+        ];
     }
-} 
+
+    /**
+     * Internal method to remove item by cartID or productID
+     */
+    private function removeItemInternal(?int $cartID, ?int $productID, ?int $customerID, ?string $sessionId): bool
+    {
+        if ($cartID) {
+            return $this->cartModel->removeItem($cartID);
+        } elseif ($productID) {
+            return $this->cartModel->removeByProduct($customerID, $sessionId, $productID);
+        }
+        return false;
+    }
+
+    private function success(string $message, array $cartData, ?string $action = null): void
+    {
+        $response = [
+            'success' => true,
+            'message' => $message,
+            'cart_count' => $cartData['count'],
+            'cart_total' => Helper::formatCurrency($cartData['subtotal']),
+            'cart_items' => $cartData['items']
+        ];
+
+        if ($action) {
+            $response['action'] = $action;
+        }
+
+        echo json_encode($response);
+    }
+
+    /**
+     * Send error JSON response
+     */
+    private function error(string $message): void
+    {
+        echo json_encode(['success' => false, 'message' => $message]);
+    }
+
+    /**
+     * Send error response with exception logging
+     */
+    private function errorResponse(string $message, Exception $e): void
+    {
+        error_log("Cart error: " . $e->getMessage());
+        echo json_encode([
+            'success' => false,
+            'message' => $message . ': ' . $e->getMessage(),
+            'cart_items' => [],
+            'cart_totals' => ['subtotal' => 0, 'shipping' => 0, 'total' => 0, 'total_items' => 0]
+        ]);
+    }
+}
