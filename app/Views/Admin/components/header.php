@@ -118,7 +118,7 @@
                         </div>
                         <span class="profile-username">
                             <span class="op-7">Hi,</span>
-                            <span class="fw-bold">Administrator</span>
+                            <span class="fw-bold"><?= htmlspecialchars($_SESSION['admin']['name'] ?? 'Administrator') ?></span>
                         </span>
                     </a>
                     <ul class="dropdown-menu dropdown-user animated fadeIn">
@@ -130,8 +130,8 @@
                                              alt="image profile" class="avatar-img rounded" />
                                     </div>
                                     <div class="u-text">
-                                        <h4>Administrator</h4>
-                                        <p class="text-muted">admin@onestore.com</p>
+                                        <h4><?= htmlspecialchars($_SESSION['admin']['name'] ?? 'Administrator') ?></h4>
+                                        <p class="text-muted"><?= htmlspecialchars($_SESSION['admin']['email'] ?? 'admin@onestore.com') ?></p>
                                         <a href="<?= admin_url('dashboard') ?>" class="btn btn-xs btn-secondary btn-sm">Dashboard</a>
                                     </div>
                                 </div>
@@ -141,7 +141,7 @@
                                 <a class="dropdown-item" href="<?= admin_url('products') ?>">Manage Products</a>
                                 <a class="dropdown-item" href="<?= admin_url('orders') ?>">Manage Orders</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="<?= admin_url('login') ?>">Logout</a>
+                                <a class="dropdown-item" href="<?= admin_url('logout') ?>">Logout</a>
                             </li>
                         </div>
                     </ul>

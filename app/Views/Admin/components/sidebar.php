@@ -91,7 +91,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="<?= admin_url('login') ?>">
+                    <a href="<?= admin_url('logout') ?>">
                         <i class="fas fa-sign-out-alt"></i>
                         <p>Logout</p>
                     </a>

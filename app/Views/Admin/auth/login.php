@@ -47,16 +47,19 @@
                             <p class="text-muted mb-0">Sign in to access store administration</p>
                         </div>
 
-                        <div class="alert alert-info py-2 small mb-4" role="alert">
-                            <i class="fas fa-info-circle me-1"></i> Demo Access: Enter any credentials to enter.
-                        </div>
+                        <?php if (!empty($_SESSION['auth_error'])): ?>
+                            <div class="alert alert-danger py-2 small mb-4" role="alert">
+                                <i class="fas fa-exclamation-circle me-1"></i> <?= htmlspecialchars($_SESSION['auth_error']) ?>
+                            </div>
+                            <?php unset($_SESSION['auth_error']); ?>
+                        <?php endif; ?>
 
-                        <form action="<?= admin_url('dashboard') ?>" method="GET">
+                        <form action="<?= admin_url('login') ?>" method="POST">
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                    <input type="text" class="form-control" id="username" name="username" value="admin" required autofocus>
+                                    <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required autofocus>
                                 </div>
                             </div>
 
@@ -67,12 +70,12 @@
                                 </div>
                                 <div class="input-group mt-1">
                                     <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                    <input type="password" class="form-control" id="password" name="password" value="password" required>
+                                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
                                 </div>
                             </div>
 
                             <div class="mb-4 form-check">
-                                <input type="checkbox" class="form-check-input" id="remember" checked>
+                                <input type="checkbox" class="form-check-input" id="remember">
                                 <label class="form-check-label" for="remember">Keep me logged in</label>
                             </div>
 

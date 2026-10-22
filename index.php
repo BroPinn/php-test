@@ -1,26 +1,20 @@
 <?php
-/**
- * OneStore - UI Router & Application Entry Point
- * 
- * Lightweight entry point that routes requests to static UI templates.
- */
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Application root path
 define('ROOT_PATH', __DIR__);
 
-// Determine base path (e.g. '/php-test' or '')
 $requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $scriptDir = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
 $basePath = ($scriptDir === '/' || $scriptDir === '\\') ? '' : $scriptDir;
 
-// Clean requested route path relative to application root
 $path = substr($requestUri, strlen($basePath));
 $path = '/' . trim($path, '/');
 if ($path === '//' || $path === '') {
     $path = '/';
 }
 
-// Global URL and Asset helpers for UI templates
 function url($route = '') {
     global $basePath;
     return $basePath . '/' . ltrim($route, '/');
@@ -52,9 +46,7 @@ function is_admin_active($segment) {
     return str_starts_with($path, '/admin/' . $segment) ? 'active' : '';
 }
 
-// Route definitions: path => [view, layout, title]
 $routes = [
-    // Storefront Client Routes
     '/' => [
         'view' => 'Client/pages/home.php',
         'layout' => 'Client/layouts/main.php',
@@ -120,8 +112,6 @@ $routes = [
         'layout' => 'Client/layouts/main.php',
         'title' => 'Register - OneStore'
     ],
-
-    // Admin Panel Routes
     '/admin' => [
         'view' => 'Admin/dashboard/index.php',
         'layout' => 'Admin/layouts/admin.php',
@@ -174,7 +164,6 @@ $routes = [
     ],
 ];
 
-// Handle dynamic routes like /product/123 or /order-confirmation/123
 if (preg_match('#^/product(/\d+)?$#', $path)) {
     $path = '/product';
 }
@@ -182,7 +171,28 @@ if (preg_match('#^/order-confirmation(/\d+)?$#', $path)) {
     $path = '/order-confirmation';
 }
 
-// Serve matching route
+if ($path === '/admin/login' && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_once __DIR__ . '/app/Controllers/Admin/AuthController.php';
+    AuthController::login();
+}
+
+if ($path === '/admin/logout') {
+    require_once __DIR__ . '/app/Controllers/Admin/AuthController.php';
+    AuthController::logout();
+}
+
+if (str_starts_with($path, '/admin')) {
+    if ($path === '/admin/login') {
+        if (isset($_SESSION['admin'])) {
+            header('Location: ' . admin_url('dashboard'));
+            exit;
+        }
+    } elseif (!isset($_SESSION['admin'])) {
+        header('Location: ' . admin_url('login'));
+        exit;
+    }
+}
+
 if (isset($routes[$path])) {
     $route = $routes[$path];
     $page_title = $route['title'];
@@ -203,7 +213,6 @@ if (isset($routes[$path])) {
     exit;
 }
 
-// 404 Fallback
 http_response_code(404);
 if (str_starts_with($path, '/admin')) {
     $page_title = '404 - Page Not Found | OneStore Admin';
