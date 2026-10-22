@@ -1,81 +1,5 @@
 <?php use App\Helpers\Helper; ?>
 
-<style>
-/* Checkout-specific table styling to override shopping cart CSS */
-#checkout-content .table-shopping-cart .table_row {
-    height: auto !important;
-    min-height: 80px;
-}
-
-#checkout-content .table-shopping-cart .table_row td {
-    padding: 15px 10px !important;
-    vertical-align: middle;
-}
-
-#checkout-content .table-shopping-cart .table_row td.column-1 {
-    padding-bottom: 15px !important;
-}
-
-#checkout-content .how-itemcart1 {
-    width: 80px;
-    height: 80px;
-    overflow: hidden;
-    border-radius: 8px;
-}
-
-#checkout-content .how-itemcart1 img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* Guest user notice and user info styling */
-.bg-light {
-    background-color: #f8f9fa !important;
-}
-
-.text-right {
-    text-align: right;
-}
-
-/* Input field improvements */
-.p-tb-15 {
-    padding-top: 15px !important;
-    padding-bottom: 15px !important;
-}
-
-/* Make table responsive */
-@media (max-width: 991px) {
-    #checkout-content .table-shopping-cart {
-        min-width: 600px;
-    }
-    
-    #checkout-content .table-shopping-cart .column-1 {
-        width: 100px;
-        padding-left: 20px;
-    }
-    
-    #checkout-content .table-shopping-cart .column-5 {
-        padding-right: 20px;
-    }
-}
-
-/* Mobile responsive styles */
-@media (max-width: 768px) {
-    .text-right {
-        text-align: center;
-    }
-    
-    .col-md-4 a {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-    
-    .col-md-6 .bg-light {
-        margin-top: 15px;
-    }
-}
-</style>
 
 <!-- Checkout -->
 <div class="bg0 p-t-75 p-b-85">
@@ -350,10 +274,10 @@ console.warn('PayPal client ID not configured. PayPal payments will not be avail
 
 <script>
 // JavaScript Configuration
-window.OneStoreClient = window.OneStoreClient || {
+window.OneStoreClient = Object.assign(window.OneStoreClient || {}, {
     baseUrl: '<?= Helper::url() ?>',
     url: (path) => '<?= Helper::url() ?>' + (path || '')
-};
+});
 
 class CheckoutPage {
     constructor() {
@@ -401,7 +325,7 @@ class CheckoutPage {
             <tr class="table_row" data-product-id="${item.productID}">
                 <td class="column-1">
                     <div class="how-itemcart1">
-                        <img src="${window.OneStoreClient.url('/public/uploads/')}${item.image_path || 'placeholder.jpg'}" alt="${item.name}">
+                        <img src="${window.OneStoreClient.resolveUploadUrl(item.image_path || 'placeholder.jpg')}" alt="${item.name}">
                     </div>
                 </td>
                 <td class="column-2">${item.name}</td>

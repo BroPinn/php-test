@@ -157,10 +157,10 @@
 
 <script>
 // JavaScript Configuration
-window.OneStoreClient = window.OneStoreClient || {
+window.OneStoreClient = Object.assign(window.OneStoreClient || {}, {
     baseUrl: '<?= Helper::url() ?>',
     url: (path) => '<?= Helper::url() ?>' + (path || '')
-};
+});
 
 // Cart management functions
 function updateQuantity(cartID, quantity) {
@@ -293,29 +293,3 @@ function proceedToCheckout() {
     window.location.href = window.OneStoreClient.url('/checkout');
 }
 </script>
-
-<style>
-.btn-remove-item {
-    background: none;
-    border: none;
-    color: #999;
-    font-size: 16px;
-    cursor: pointer;
-    padding: 5px;
-    transition: color 0.3s;
-}
-
-.btn-remove-item:hover {
-    color: #e74c3c;
-}
-
-.cart-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.w-full {
-    width: 100%;
-}
-</style> 

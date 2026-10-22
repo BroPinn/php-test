@@ -64,31 +64,3 @@
         </div>
     </div>
 </div>
-
-<style>
-.alert {
-    border-radius: 4px;
-    padding: 12px;
-    margin-bottom: 20px;
-}
-
-.alert-danger {
-    background-color: #f8d7da;
-    border-color: #f5c6cb;
-    color: #721c24;
-}
-
-.alert-success {
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-    color: #155724;
-}
-
-.justify-content-center {
-    justify-content: center;
-}
-
-.w-full {
-    width: 100%;
-}
-</style> 

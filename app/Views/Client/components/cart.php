@@ -1,5 +1,15 @@
 <?php use App\Helpers\Helper; ?>
 
+<?php
+$header_cart_items = $header_cart_items ?? [];
+$header_cart_totals = $header_cart_totals ?? [
+    'subtotal' => 0,
+    'shipping' => 0,
+    'total' => 0,
+    'total_items' => 0,
+];
+?>
+
 <!-- Modal Shopping Cart -->
 <div class="wrap-header-cart js-panel-cart">
     <div class="s-full js-hide-cart"></div>
@@ -15,19 +25,44 @@
         
         <div class="header-cart-content flex-w js-pscroll">
             <ul class="header-cart-wrapitem w-full" id="header-cart-items">
-                <!-- Cart Items will be loaded here dynamically -->
+                <?php foreach ($header_cart_items as $item): ?>
+                    <li class="header-cart-item flex-w flex-t m-b-12" data-product-id="<?= (int) ($item['product_id'] ?? $item['productID'] ?? 0) ?>" data-cart-id="<?= (int) ($item['cartID'] ?? 0) ?>">
+                        <div class="header-cart-item-img">
+                            <img src="<?= Helper::upload($item['image_path'] ?? $item['image'] ?? 'placeholder.jpg') ?>"
+                                 alt="<?= Helper::sanitize($item['name'] ?? $item['productName'] ?? 'Product') ?>"
+                                 style="width: 60px; height: 60px; object-fit: cover;">
+                        </div>
+
+                        <div class="header-cart-item-txt p-t-8 flex-grow-1">
+                            <a href="<?= Helper::url('product/' . ((int) ($item['product_id'] ?? $item['productID'] ?? 0))) ?>" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                <?= Helper::sanitize($item['name'] ?? $item['productName'] ?? 'Product') ?>
+                            </a>
+
+                            <div class="flex-w flex-sb-m">
+                                <span class="header-cart-item-info">
+                                    <?= (int) ($item['quantity'] ?? 0) ?> x <?= Helper::formatCurrency($item['price'] ?? 0) ?>
+                                </span>
+                                <button class="btn-remove-header-cart cl2 hov-cl1 trans-04"
+                                        data-product-id="<?= (int) ($item['product_id'] ?? $item['productID'] ?? 0) ?>"
+                                        data-cart-id="<?= (int) ($item['cartID'] ?? 0) ?>">
+                                    <i class="zmdi zmdi-close"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
             </ul>
             
             <!-- Empty Cart Message -->
-            <div id="empty-cart-message" class="text-center p-t-20 p-b-20" style="display: none;">
+            <div id="empty-cart-message" class="text-center p-t-20 p-b-20" style="<?= empty($header_cart_items) ? '' : 'display: none;' ?>">
                 <p class="stext-113 cl6">Your cart is empty</p>
             </div>
             
             <!-- Cart Summary -->
-            <div id="cart-summary" style="display: none;">
+            <div id="cart-summary" style="<?= empty($header_cart_items) ? 'display: none;' : '' ?>">
                 <div class="w-full">
                     <div class="header-cart-total w-full p-tb-40" id="header-cart-total">
-                        Total: $0.00
+                        Total: <?= Helper::formatCurrency($header_cart_totals['total'] ?? 0) ?>
                     </div>
 
                     <div class="header-cart-buttons flex-w w-full">
@@ -42,216 +77,205 @@
 </div>
 
 <script>
-// JavaScript Configuration - FIXED for both Development & Production
-window.OneStoreClient = window.OneStoreClient || {
+window.OneStoreClient = Object.assign(window.OneStoreClient || {}, {
     baseUrl: '<?= APP_URL ?>',
+    uploadsUrl: '<?= Helper::uploadBase() ?>',
     url: function(path) {
         const cleanPath = (path || '').replace(/^\//, '');
         const baseUrl = '<?= APP_URL ?>';
         return baseUrl + (cleanPath ? '/' + cleanPath : '');
-    }
-};
-// Header Cart Management
-class HeaderCart {
-    constructor() {
-        this.init();
-    }
-
-    init() {
-        this.loadCartData();
-        this.bindEvents();
-        
-        // Listen for cart updates from other parts of the site
-        document.addEventListener('cartUpdated', () => {
-            this.loadCartData();
-        });
-    }
-
-    async loadCartData() {
-        try {
-            const response = await fetch(window.OneStoreClient.url('/cart/get'));
-            const data = await response.json();
-            
-            if (data.success) {
-                this.updateCartDisplay(data.cart_items, data.cart_totals);
-            } else {
-                this.showEmptyCart();
-            }
-        } catch (error) {
-            console.error('Error loading cart:', error);
-            this.showEmptyCart();
+    },
+    resolveUploadUrl: function(path) {
+        if (!path) {
+            return this.uploadsUrl + 'placeholder.jpg';
         }
+
+        const originalPath = String(path);
+        if (/^(?:https?:)?\/\//.test(originalPath) || originalPath.startsWith('data:')) {
+            return originalPath;
+        }
+
+        const cleanPath = originalPath
+            .replace(/^\/+/, '')
+            .replace(/^public\/uploads\//, '')
+            .replace(/^uploads\//, '');
+
+        return this.uploadsUrl + cleanPath;
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const itemsContainer = document.getElementById('header-cart-items');
+    const emptyMessage = document.getElementById('empty-cart-message');
+    const summaryElement = document.getElementById('cart-summary');
+    const totalElement = document.getElementById('header-cart-total');
+
+    if (!itemsContainer || !emptyMessage || !summaryElement || !totalElement) {
+        return;
     }
 
-    updateCartDisplay(items, totals) {
-        const itemsContainer = document.getElementById('header-cart-items');
-        const totalElement = document.getElementById('header-cart-total');
-        const summaryElement = document.getElementById('cart-summary');
-        const emptyMessage = document.getElementById('empty-cart-message');
-        
-        // Safety check for items array
-        if (!items || !Array.isArray(items) || items.length === 0) {
-            this.showEmptyCart();
+    const escapeHtml = (value) => {
+        const div = document.createElement('div');
+        div.textContent = value ?? '';
+        return div.innerHTML;
+    };
+
+    const formatMoney = (value) => `$${Number(value || 0).toFixed(2)}`;
+
+    const updateCartCount = (count) => {
+        document.querySelectorAll('.icon-header-noti[data-notify]').forEach((element) => {
+            element.setAttribute('data-notify', String(count || 0));
+        });
+    };
+
+    const renderCart = (items, totals) => {
+        if (!Array.isArray(items) || items.length === 0) {
+            itemsContainer.innerHTML = '';
+            emptyMessage.style.display = 'block';
+            summaryElement.style.display = 'none';
+            updateCartCount(0);
             return;
         }
 
-        // Show cart content
-        summaryElement.style.display = 'block';
-        emptyMessage.style.display = 'none';
-        
-        // Update items using reduce for total quantity
-        itemsContainer.innerHTML = items.map(item => `
-            <li class="header-cart-item flex-w flex-t m-b-12" data-product-id="${item.product_id || item.productID}">
-                <div class="header-cart-item-img">
-                    <img src="${window.OneStoreClient.url('/uploads/')}${item.image_path || item.image || 'placeholder.jpg'}" alt="${item.name || item.productName}" style="width: 60px; height: 60px; object-fit: cover;">
-                </div>
+        itemsContainer.innerHTML = items.map((item) => {
+            const productId = item.product_id || item.productID || 0;
+            const cartId = item.cartID || 0;
+            const productName = escapeHtml(item.name || item.productName || 'Product');
+            const price = formatMoney(item.price);
+            const imageUrl = window.OneStoreClient.resolveUploadUrl(item.image_path || item.image || 'placeholder.jpg');
 
-                <div class="header-cart-item-txt p-t-8 flex-grow-1">
-                    <a href="${window.OneStoreClient.url('/product/')}${item.product_id || item.productID}" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                        ${item.name || item.productName}
-                    </a>
-
-                    <div class="flex-w flex-sb-m">
-                        <span class="header-cart-item-info">
-                            ${item.quantity} x $${parseFloat(item.price).toFixed(2)}
-                        </span>
-                        <button class="btn-remove-header-cart cl2 hov-cl1 trans-04" data-product-id="${item.product_id || item.productID}" data-cart-id="${item.cartID}">
-                            <i class="zmdi zmdi-close"></i>
-                        </button>
+            return `
+                <li class="header-cart-item flex-w flex-t m-b-12" data-product-id="${productId}" data-cart-id="${cartId}">
+                    <div class="header-cart-item-img">
+                        <img src="${imageUrl}" alt="${productName}" style="width: 60px; height: 60px; object-fit: cover;">
                     </div>
-                </div>
-            </li>
-        `).join('');
+                    <div class="header-cart-item-txt p-t-8 flex-grow-1">
+                        <a href="${window.OneStoreClient.url(`/product/${productId}`)}" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                            ${productName}
+                        </a>
+                        <div class="flex-w flex-sb-m">
+                            <span class="header-cart-item-info">
+                                ${Number(item.quantity || 0)} x ${price}
+                            </span>
+                            <button class="btn-remove-header-cart cl2 hov-cl1 trans-04" data-product-id="${productId}" data-cart-id="${cartId}">
+                                <i class="zmdi zmdi-close"></i>
+                            </button>
+                        </div>
+                    </div>
+                </li>
+            `;
+        }).join('');
 
-        // Update total
-        totalElement.textContent = `Total: $${parseFloat(totals?.total || 0).toFixed(2)}`;
-        
-        // Update cart count in header using reduce
-        const totalQuantity = items.reduce((sum, item) => sum + parseInt(item.quantity || 0), 0);
-        this.updateCartCount(totalQuantity);
-        
-        // Bind remove buttons
-        this.bindRemoveButtons();
-    }
+        emptyMessage.style.display = 'none';
+        summaryElement.style.display = 'block';
+        totalElement.textContent = `Total: ${formatMoney(totals?.total || 0)}`;
+        updateCartCount(totals?.total_items || items.reduce((sum, item) => sum + Number(item.quantity || 0), 0));
+    };
 
-    showEmptyCart() {
-        const summaryElement = document.getElementById('cart-summary');
-        const emptyMessage = document.getElementById('empty-cart-message');
-        const itemsContainer = document.getElementById('header-cart-items');
-        
-        summaryElement.style.display = 'none';
-        emptyMessage.style.display = 'block';
-        itemsContainer.innerHTML = '';
-        
-        this.updateCartCount(0);
-    }
-
-    updateCartCount(count) {
-        const cartCountElement = document.querySelector('[data-notify]');
-        if (cartCountElement) {
-            cartCountElement.setAttribute('data-notify', count || 0);
-        }
-    }
-
-    bindEvents() {
-        // Add to cart buttons
-        document.addEventListener('click', (e) => {
-            if (e.target.matches('.add-to-cart-btn') || e.target.closest('.add-to-cart-btn')) {
-                e.preventDefault();
-                const button = e.target.matches('.add-to-cart-btn') ? e.target : e.target.closest('.add-to-cart-btn');
-                this.addToCart(button);
-            }
-        });
-    }
-
-    bindRemoveButtons() {
-        document.querySelectorAll('.btn-remove-header-cart').forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                const cartId = button.getAttribute('data-cart-id');
-                const productId = button.getAttribute('data-product-id');
-                this.removeFromCart(cartId || productId, cartId ? 'cart_id' : 'product_id');
+    const refreshCart = async () => {
+        try {
+            const response = await fetch(window.OneStoreClient.url('/cart/get'), {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
             });
-        });
-    }
+            const data = await response.json();
 
-    async addToCart(button) {
-        const productData = {
-            product_id: button.getAttribute('data-product-id'),
-            name: button.getAttribute('data-product-name'),
-            price: button.getAttribute('data-product-price'),
-            image: button.getAttribute('data-product-image'),
-            quantity: 1
-        };
+            if (data.success) {
+                renderCart(data.cart_items || [], data.cart_totals || {});
+            }
+        } catch (error) {
+            console.error('Error refreshing mini cart:', error);
+        }
+    };
+
+    const showNotification = (message, type) => {
+        if (typeof swal !== 'undefined') {
+            swal(message, '', type === 'error' ? 'error' : 'success');
+            return;
+        }
+
+        alert(message);
+    };
+
+    const addToCart = async (button) => {
+        const productId = button.getAttribute('data-product-id');
+        const productName = button.getAttribute('data-product-name') || 'Item';
+
+        if (!productId) {
+            return;
+        }
 
         try {
             const response = await fetch(window.OneStoreClient.url('/cart/add'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
-                body: JSON.stringify(productData)
+                body: JSON.stringify({
+                    product_id: productId,
+                    quantity: 1
+                })
             });
-
             const data = await response.json();
-            
-            if (data.success) {
-                this.showNotification(`${productData.name} added to cart!`, 'success');
-                this.loadCartData();
-                
-                // Dispatch cart updated event
-                document.dispatchEvent(new CustomEvent('cartUpdated'));
-            } else {
-                this.showNotification(data.message || 'Failed to add item to cart', 'error');
+
+            if (!data.success) {
+                showNotification(data.message || 'Failed to add item to cart', 'error');
+                return;
             }
+
+            await refreshCart();
+            document.dispatchEvent(new CustomEvent('cartUpdated'));
+            showNotification(`${productName} added to cart!`, 'success');
         } catch (error) {
             console.error('Error adding to cart:', error);
-            this.showNotification('An error occurred while adding to cart', 'error');
+            showNotification('An error occurred while adding to cart', 'error');
         }
-    }
+    };
 
-    async removeFromCart(id, idType = 'product_id') {
+    const removeFromCart = async (button) => {
+        const cartId = button.getAttribute('data-cart-id');
+        const productId = button.getAttribute('data-product-id');
+        const requestBody = cartId ? { cart_id: cartId } : { product_id: productId };
+
         try {
-            const requestBody = {};
-            requestBody[idType] = id;
-            
             const response = await fetch(window.OneStoreClient.url('/cart/remove'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify(requestBody)
             });
-
             const data = await response.json();
-            
-            if (data.success) {
-                this.showNotification('Item removed from cart', 'success');
-                this.loadCartData();
-                
-                // Dispatch cart updated event
-                document.dispatchEvent(new CustomEvent('cartUpdated'));
-            } else {
-                this.showNotification(data.message || 'Failed to remove item', 'error');
+
+            if (!data.success) {
+                showNotification(data.message || 'Failed to remove item', 'error');
+                return;
             }
+
+            await refreshCart();
+            document.dispatchEvent(new CustomEvent('cartUpdated'));
         } catch (error) {
             console.error('Error removing from cart:', error);
-            this.showNotification('An error occurred', 'error');
+            showNotification('An error occurred', 'error');
         }
-    }
+    };
 
-    showNotification(message, type) {
-        // Use SweetAlert if available, otherwise fallback to simple alert
-        if (typeof swal !== 'undefined') {
-            swal(message, "", type === 'error' ? 'error' : 'success');
-        } else {
-            alert(message);
+    document.addEventListener('click', (event) => {
+        const addButton = event.target.closest('.add-to-cart-btn');
+        if (addButton) {
+            event.preventDefault();
+            addToCart(addButton);
+            return;
         }
-    }
-}
 
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    new HeaderCart();
+        const removeButton = event.target.closest('.btn-remove-header-cart');
+        if (removeButton) {
+            event.preventDefault();
+            removeFromCart(removeButton);
+        }
+    });
 });
 </script> 

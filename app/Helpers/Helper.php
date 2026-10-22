@@ -250,6 +250,21 @@ class Helper
     }
 
     /**
+     * Get uploads base URL with trailing slash
+     */
+    public static function uploadBase()
+    {
+        $basePath = defined('BASE_PATH') && !empty(BASE_PATH) ? BASE_PATH : '';
+        $docRoot = $_SERVER['DOCUMENT_ROOT'] ?? '';
+
+        if (basename($docRoot) === 'public') {
+            return $basePath . '/uploads/';
+        }
+
+        return $basePath . '/public/uploads/';
+    }
+
+    /**
      * Generate URL for routes - Environment aware
      */
     public static function url($path = '')

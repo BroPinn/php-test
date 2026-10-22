@@ -194,14 +194,32 @@
     <?php endif; ?>
     <script>
         // OneStoreClient Configuration - FIXED for both Development & Production
-        window.OneStoreClient = window.OneStoreClient || {
+        window.OneStoreClient = Object.assign(window.OneStoreClient || {}, {
             baseUrl: '<?= APP_URL ?>',
+            uploadsUrl: '<?= Helper::uploadBase() ?>',
             url: function(path) {
                 const cleanPath = (path || '').replace(/^\//, '');
                 const baseUrl = '<?= APP_URL ?>';
                 return baseUrl + (cleanPath ? '/' + cleanPath : '');
+            },
+            resolveUploadUrl: function(path) {
+                if (!path) {
+                    return this.uploadsUrl + 'placeholder.jpg';
+                }
+
+                const originalPath = String(path);
+                if (/^(?:https?:)?\/\//.test(originalPath) || originalPath.startsWith('data:')) {
+                    return originalPath;
+                }
+
+                const cleanPath = originalPath
+                    .replace(/^\/+/, '')
+                    .replace(/^public\/uploads\//, '')
+                    .replace(/^uploads\//, '');
+
+                return this.uploadsUrl + cleanPath;
             }
-        };
+        });
     </script>
 </body>
 </html> 

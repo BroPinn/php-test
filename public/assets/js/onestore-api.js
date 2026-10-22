@@ -112,8 +112,15 @@ class OneStoreAPI {
      * @returns {string} - Full image URL
      */
     getProductImageUrl(imagePath) {
-        if (!imagePath) return '/public/assets/images/no-image.png';
-        return `/public/uploads/products/${imagePath}`;
+        if (!imagePath) {
+            return window.OneStoreClient?.resolveUploadUrl('placeholder.jpg') || '/uploads/placeholder.jpg';
+        }
+
+        if (window.OneStoreClient?.resolveUploadUrl) {
+            return window.OneStoreClient.resolveUploadUrl(imagePath);
+        }
+
+        return `/uploads/${String(imagePath).replace(/^\/+/, '').replace(/^public\/uploads\//, '').replace(/^uploads\//, '')}`;
     }
 
     /**
@@ -126,7 +133,12 @@ class OneStoreAPI {
             // Return a placeholder gradient image for sliders without images
             return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyMCIgaGVpZ2h0PSI2MDAiIHZpZXdCb3g9IjAgMCAxOTIwIDYwMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQiIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojNjY3ZWVhO3N0b3Atb3BhY2l0eToxIiAvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM3NjRiYTI7c3RvcC1vcGFjaXR5OjEiIC8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPHJLQ3QgeD0iMCIgeT0iMCIgd2lkdGg9IjE5MjAiIGhlaWdodD0iNjAwIiBmaWxsPSJ1cmwoI2dyYWRpZW50KSIvPgo8dGV4dCB4PSI5NjAiIHk9IjMwMCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjQ4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk9uZVN0b3JlPC90ZXh0Pgo8L3N2Zz4K';
         }
-        return `/public/uploads/slider/${imagePath}`;
+
+        if (window.OneStoreClient?.resolveUploadUrl) {
+            return window.OneStoreClient.resolveUploadUrl(imagePath);
+        }
+
+        return `/uploads/${String(imagePath).replace(/^\/+/, '').replace(/^public\/uploads\//, '').replace(/^uploads\//, '')}`;
     }
 }
 

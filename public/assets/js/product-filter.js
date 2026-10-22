@@ -186,8 +186,8 @@ class ProductFilter {
     
     createProductCard(product) {
         const imageUrl = product.image_path 
-            ? `/uploads/${product.image_path}` 
-            : '/uploads/placeholder.jpg';
+            ? window.OneStoreClient.resolveUploadUrl(product.image_path)
+            : window.OneStoreClient.resolveUploadUrl('placeholder.jpg');
         
         const categoryClass = product.categoryName 
             ? product.categoryName.toLowerCase() 

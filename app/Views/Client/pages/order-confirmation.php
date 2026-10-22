@@ -92,7 +92,7 @@
                                 <tr class="table_row">
                                     <td class="column-1">
                                         <div class="how-itemcart1">
-                                        <img src="<?= Helper::url('/public/uploads/' . ($item['image_path'] ?? 'placeholder.jpg')) ?>" alt="<?= htmlspecialchars($item['product_name']) ?>">
+                                        <img src="<?= Helper::upload($item['image_path'] ?? 'placeholder.jpg') ?>" alt="<?= htmlspecialchars($item['product_name']) ?>">
                                         </div>
                                     </td>
                                     <td class="column-2"><?= htmlspecialchars($item['product_name']) ?></td>
@@ -200,34 +200,3 @@
         </div>
     </div>
 </div>
-
-<style>
-/* Order confirmation specific styles */
-.how-itemcart1 {
-    width: 80px;
-    height: 80px;
-    overflow: hidden;
-    border-radius: 8px;
-}
-
-.how-itemcart1 img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-@media (max-width: 991px) {
-    .table-shopping-cart {
-        min-width: 600px;
-    }
-    
-    .table-shopping-cart .column-1 {
-        width: 100px;
-        padding-left: 20px;
-    }
-    
-    .table-shopping-cart .column-5 {
-        padding-right: 20px;
-    }
-}
-</style> 

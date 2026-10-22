@@ -186,6 +186,26 @@ if (!defined('CSRF_TOKEN_NAME'))
 if (!defined('PASSWORD_HASH_ALGO'))
     define('PASSWORD_HASH_ALGO', PASSWORD_DEFAULT);
 
+if (PHP_SAPI !== 'cli' && session_status() === PHP_SESSION_NONE) {
+    $cookiePath = BASE_PATH ?: '/';
+    $isSecure = str_starts_with((string) APP_URL, 'https://');
+    $activeSessionName = isset($_COOKIE[SESSION_NAME]) ? SESSION_NAME : session_name();
+
+    if (session_name() !== $activeSessionName) {
+        session_name($activeSessionName);
+    }
+
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => $cookiePath,
+        'secure' => $isSecure,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+
+    session_start();
+}
+
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
