@@ -1,22 +1,14 @@
-<?php
-use App\Helpers\Helper;
-
-$page_title = 'Order Management - OneStore Admin';
-$content = ob_start();
-?>
-
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="mb-1">
             <i class="fas fa-shopping-cart text-primary me-2"></i>Order Management
         </h2>
-        <p class="text-muted mb-0">Manage customer orders and track status</p>
+        <p class="text-muted mb-0">Track and fulfill customer orders</p>
     </div>
 </div>
 
 <!-- Statistics Cards -->
-<?php if (!empty($stats)): ?>
 <div class="row g-4 mb-4">
     <div class="col-sm-6 col-md-3">
         <div class="card card-stats card-round">
@@ -30,7 +22,7 @@ $content = ob_start();
                     <div class="col col-stats ms-3 ms-sm-0">
                         <div class="numbers">
                             <p class="card-category">Total Orders</p>
-                            <h4 class="card-title"><?= number_format($stats['total_orders'] ?? 0) ?></h4>
+                            <h4 class="card-title">128</h4>
                         </div>
                     </div>
                 </div>
@@ -42,33 +34,14 @@ $content = ob_start();
             <div class="card-body py-3">
                 <div class="row align-items-center">
                     <div class="col-icon">
-                        <div class="icon-big text-center icon-secondary bubble-shadow-small">
+                        <div class="icon-big text-center icon-warning bubble-shadow-small">
                             <i class="fas fa-clock"></i>
                         </div>
                     </div>
                     <div class="col col-stats ms-3 ms-sm-0">
                         <div class="numbers">
                             <p class="card-category">Pending Orders</p>
-                            <h4 class="card-title"><?= number_format($stats['pending_orders'] ?? 0) ?></h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 col-md-3">
-        <div class="card card-stats card-round">
-            <div class="card-body py-3">
-                <div class="row align-items-center">
-                    <div class="col-icon">
-                        <div class="icon-big text-center icon-success bubble-shadow-small">
-                            <i class="fas fa-dollar-sign"></i>
-                        </div>
-                    </div>
-                    <div class="col col-stats ms-3 ms-sm-0">
-                        <div class="numbers">
-                            <p class="card-category">Revenue</p>
-                            <h4 class="card-title">$<?= number_format($stats['total_revenue'] ?? 0, 2) ?></h4>
+                            <h4 class="card-title">12</h4>
                         </div>
                     </div>
                 </div>
@@ -81,13 +54,32 @@ $content = ob_start();
                 <div class="row align-items-center">
                     <div class="col-icon">
                         <div class="icon-big text-center icon-info bubble-shadow-small">
-                            <i class="fas fa-chart-line"></i>
+                            <i class="fas fa-box-open"></i>
                         </div>
                     </div>
                     <div class="col col-stats ms-3 ms-sm-0">
                         <div class="numbers">
-                            <p class="card-category">Avg. Order</p>
-                            <h4 class="card-title">$<?= number_format($stats['avg_order'] ?? 0, 2) ?></h4>
+                            <p class="card-category">Processing</p>
+                            <h4 class="card-title">24</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-md-3">
+        <div class="card card-stats card-round">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-icon">
+                        <div class="icon-big text-center icon-success bubble-shadow-small">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                            <p class="card-category">Completed</p>
+                            <h4 class="card-title">92</h4>
                         </div>
                     </div>
                 </div>
@@ -95,194 +87,242 @@ $content = ob_start();
         </div>
     </div>
 </div>
-<?php endif; ?>
 
-<!-- Filter Section -->
-<div class="card mb-4">
-    <div class="card-body">
-        <form method="GET" class="row g-3">
-            <div class="col-md-3">
-                <label for="status" class="form-label">Order Status</label>
-                <select class="form-select" name="status" id="status">
-                    <option value="">All Statuses</option>
-                    <option value="pending" <?= ($filters['status'] ?? '') === 'pending' ? 'selected' : '' ?>>Pending</option>
-                    <option value="processing" <?= ($filters['status'] ?? '') === 'processing' ? 'selected' : '' ?>>Processing</option>
-                    <option value="shipped" <?= ($filters['status'] ?? '') === 'shipped' ? 'selected' : '' ?>>Shipped</option>
-                    <option value="delivered" <?= ($filters['status'] ?? '') === 'delivered' ? 'selected' : '' ?>>Delivered</option>
-                    <option value="cancelled" <?= ($filters['status'] ?? '') === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label for="payment_status" class="form-label">Payment Status</label>
-                <select class="form-select" name="payment_status" id="payment_status">
-                    <option value="">All Payment Status</option>
-                    <option value="pending" <?= ($filters['payment_status'] ?? '') === 'pending' ? 'selected' : '' ?>>Pending</option>
-                    <option value="paid" <?= ($filters['payment_status'] ?? '') === 'paid' ? 'selected' : '' ?>>Paid</option>
-                    <option value="failed" <?= ($filters['payment_status'] ?? '') === 'failed' ? 'selected' : '' ?>>Failed</option>
-                    <option value="refunded" <?= ($filters['payment_status'] ?? '') === 'refunded' ? 'selected' : '' ?>>Refunded</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label for="date_from" class="form-label">Date From</label>
-                <input type="date" class="form-control" name="date_from" id="date_from" value="<?= $filters['date_from'] ?? '' ?>">
-            </div>
-            <div class="col-md-3">
-                <label for="date_to" class="form-label">Date To</label>
-                <input type="date" class="form-control" name="date_to" id="date_to" value="<?= $filters['date_to'] ?? '' ?>">
-            </div>
-            <div class="col-12">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-filter me-2"></i>Filter Orders
-                </button>
-                <a href="/admin/orders" class="btn btn-secondary">
-                    <i class="fas fa-times me-2"></i>Clear Filters
-                </a>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Orders Table -->
+<!-- Orders Card -->
 <div class="card">
-    <div class="card-body">
-        <?php if (empty($orders)): ?>
-            <div class="text-center py-5">
-                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">No orders found</h5>
-                <p class="text-muted">Orders will appear here when customers make purchases.</p>
-            </div>
-        <?php else: ?>
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Customer</th>
-                            <th>Items</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                            <th>Payment</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($orders as $order): ?>
-                            <tr>
-                                <td><strong>#<?= $order['orderID'] ?></strong></td>
-                                <td>
-                                    <div>
-                                        <div class="fw-bold"><?= htmlspecialchars($order['customer_name'] ?? 'Unknown Customer') ?></div>
-                                        <small class="text-muted"><?= htmlspecialchars($order['customer_email'] ?? 'No email') ?></small>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge bg-info"><?= $order['item_count'] ?? 0 ?> items</span>
-                                </td>
-                                <td><strong>$<?= number_format($order['total_amount'], 2) ?></strong></td>
-                                <td>
-                                    <span class="badge bg-<?= 
-                                        ($order['order_status'] ?? '') === 'delivered' ? 'success' : 
-                                        (($order['order_status'] ?? '') === 'shipped' ? 'info' : 
-                                        (($order['order_status'] ?? '') === 'processing' ? 'warning' : 
-                                        (($order['order_status'] ?? '') === 'cancelled' ? 'danger' : 'secondary'))) ?>">
-                                        <?= ucfirst($order['order_status'] ?? 'pending') ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge bg-<?= 
-                                        ($order['payment_status'] ?? '') === 'paid' ? 'success' : 
-                                        (($order['payment_status'] ?? '') === 'failed' ? 'danger' : 
-                                        (($order['payment_status'] ?? '') === 'refunded' ? 'warning' : 'secondary')) ?>">
-                                        <?= ucfirst($order['payment_status'] ?? 'pending') ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <small class="text-muted">
-                                        <?= date('M d, Y', strtotime($order['created_at'])) ?>
-                                    </small>
-                                </td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <a href="/admin/orders/view?id=<?= $order['orderID'] ?>" 
-                                           class="btn btn-sm btn-outline-primary" 
-                                           title="View Order">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <button class="btn btn-sm btn-outline-success" 
-                                                onclick="updateOrderStatus(<?= $order['orderID'] ?>)" 
-                                                title="Update Status">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-warning" 
-                                                onclick="updatePaymentStatus(<?= $order['orderID'] ?>)" 
-                                                title="Update Payment">
-                                            <i class="fas fa-credit-card"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            <?php if (!empty($pagination)): ?>
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div class="text-muted">
-                        Showing <?= $pagination['start'] ?> to <?= $pagination['end'] ?> of <?= $pagination['total'] ?> orders
-                    </div>
-                    <nav>
-                        <ul class="pagination mb-0">
-                            <?php if ($pagination['current_page'] > 1): ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<?= $pagination['current_page'] - 1 ?><?= !empty($_GET) ? '&' . http_build_query(array_diff_key($_GET, ['page' => ''])) : '' ?>">Previous</a>
-                                </li>
-                            <?php endif; ?>
-                            
-                            <?php for ($i = max(1, $pagination['current_page'] - 2); $i <= min($pagination['total_pages'], $pagination['current_page'] + 2); $i++): ?>
-                                <li class="page-item <?= $i === $pagination['current_page'] ? 'active' : '' ?>">
-                                    <a class="page-link" href="?page=<?= $i ?><?= !empty($_GET) ? '&' . http_build_query(array_diff_key($_GET, ['page' => ''])) : '' ?>"><?= $i ?></a>
-                                </li>
-                            <?php endfor; ?>
-                            
-                            <?php if ($pagination['current_page'] < $pagination['total_pages']): ?>
-                                <li class="page-item">
-                                    <a class="page-link" href="?page=<?= $pagination['current_page'] + 1 ?><?= !empty($_GET) ? '&' . http_build_query(array_diff_key($_GET, ['page' => ''])) : '' ?>">Next</a>
-                                </li>
-                            <?php endif; ?>
-                        </ul>
-                    </nav>
+    <div class="card-header border-bottom-0 pb-0">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Search order ID or customer...">
                 </div>
-            <?php endif; ?>
-        <?php endif; ?>
+            </div>
+            <div class="col-md-8 text-md-end">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary active">All (128)</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary">Pending (12)</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary">Processing (24)</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary">Shipped (18)</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary">Delivered (92)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0 mt-3">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Date Placed</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Payment</th>
+                        <th>Fulfillment</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="<?= admin_url('orders/view') ?>" class="fw-bold text-decoration-none">#ORD-7829</a>
+                        </td>
+                        <td>
+                            <div class="fw-bold">Sarah Johnson</div>
+                            <small class="text-muted">sarah.j@example.com</small>
+                        </td>
+                        <td>Oct 22, 2026</td>
+                        <td>3 items</td>
+                        <td class="fw-bold">$249.00</td>
+                        <td><span class="badge bg-success-light text-success border border-success">Paid (Card)</span></td>
+                        <td><span class="badge bg-primary">Shipped</span></td>
+                        <td class="text-end pe-4">
+                            <a href="<?= admin_url('orders/view') ?>" class="btn btn-sm btn-outline-primary me-1" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="updateStatus('ORD-7829', 'Shipped')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <a href="<?= admin_url('orders/view') ?>" class="fw-bold text-decoration-none">#ORD-7828</a>
+                        </td>
+                        <td>
+                            <div class="fw-bold">Michael Chen</div>
+                            <small class="text-muted">mchen@example.com</small>
+                        </td>
+                        <td>Oct 21, 2026</td>
+                        <td>1 item</td>
+                        <td class="fw-bold">$124.50</td>
+                        <td><span class="badge bg-success-light text-success border border-success">Paid (PayPal)</span></td>
+                        <td><span class="badge bg-success">Delivered</span></td>
+                        <td class="text-end pe-4">
+                            <a href="<?= admin_url('orders/view') ?>" class="btn btn-sm btn-outline-primary me-1" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="updateStatus('ORD-7828', 'Delivered')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <a href="<?= admin_url('orders/view') ?>" class="fw-bold text-decoration-none">#ORD-7827</a>
+                        </td>
+                        <td>
+                            <div class="fw-bold">Emily Davis</div>
+                            <small class="text-muted">emily.d@example.com</small>
+                        </td>
+                        <td>Oct 21, 2026</td>
+                        <td>2 items</td>
+                        <td class="fw-bold">$89.00</td>
+                        <td><span class="badge bg-success-light text-success border border-success">Paid (Card)</span></td>
+                        <td><span class="badge bg-info">Processing</span></td>
+                        <td class="text-end pe-4">
+                            <a href="<?= admin_url('orders/view') ?>" class="btn btn-sm btn-outline-primary me-1" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="updateStatus('ORD-7827', 'Processing')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <a href="<?= admin_url('orders/view') ?>" class="fw-bold text-decoration-none">#ORD-7826</a>
+                        </td>
+                        <td>
+                            <div class="fw-bold">David Kim</div>
+                            <small class="text-muted">dkim99@example.com</small>
+                        </td>
+                        <td>Oct 20, 2026</td>
+                        <td>1 item</td>
+                        <td class="fw-bold">$45.00</td>
+                        <td><span class="badge bg-warning-light text-warning border border-warning">Pending (COD)</span></td>
+                        <td><span class="badge bg-warning">Pending</span></td>
+                        <td class="text-end pe-4">
+                            <a href="<?= admin_url('orders/view') ?>" class="btn btn-sm btn-outline-primary me-1" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="updateStatus('ORD-7826', 'Pending')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <a href="<?= admin_url('orders/view') ?>" class="fw-bold text-decoration-none">#ORD-7825</a>
+                        </td>
+                        <td>
+                            <div class="fw-bold">Jessica Taylor</div>
+                            <small class="text-muted">jtaylor@example.com</small>
+                        </td>
+                        <td>Oct 19, 2026</td>
+                        <td>4 items</td>
+                        <td class="fw-bold">$320.00</td>
+                        <td><span class="badge bg-success-light text-success border border-success">Paid (Card)</span></td>
+                        <td><span class="badge bg-success">Delivered</span></td>
+                        <td class="text-end pe-4">
+                            <a href="<?= admin_url('orders/view') ?>" class="btn btn-sm btn-outline-primary me-1" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="updateStatus('ORD-7825', 'Delivered')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <a href="<?= admin_url('orders/view') ?>" class="fw-bold text-decoration-none">#ORD-7824</a>
+                        </td>
+                        <td>
+                            <div class="fw-bold">Alex Brown</div>
+                            <small class="text-muted">abrown@example.com</small>
+                        </td>
+                        <td>Oct 18, 2026</td>
+                        <td>2 items</td>
+                        <td class="fw-bold">$158.00</td>
+                        <td><span class="badge bg-success-light text-success border border-success">Paid (Card)</span></td>
+                        <td><span class="badge bg-primary">Shipped</span></td>
+                        <td class="text-end pe-4">
+                            <a href="<?= admin_url('orders/view') ?>" class="btn btn-sm btn-outline-primary me-1" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="updateStatus('ORD-7824', 'Shipped')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <a href="<?= admin_url('orders/view') ?>" class="fw-bold text-decoration-none">#ORD-7823</a>
+                        </td>
+                        <td>
+                            <div class="fw-bold">Sophia Wilson</div>
+                            <small class="text-muted">swilson@example.com</small>
+                        </td>
+                        <td>Oct 17, 2026</td>
+                        <td>1 item</td>
+                        <td class="fw-bold">$75.00</td>
+                        <td><span class="badge bg-danger-light text-danger border border-danger">Refunded</span></td>
+                        <td><span class="badge bg-danger">Cancelled</span></td>
+                        <td class="text-end pe-4">
+                            <a href="<?= admin_url('orders/view') ?>" class="btn btn-sm btn-outline-primary me-1" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="updateStatus('ORD-7823', 'Cancelled')">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer d-flex justify-content-between align-items-center py-3">
+        <span class="text-muted small">Showing 1 to 7 of 128 orders</span>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link" href="#">Next</a></li>
+            </ul>
+        </nav>
     </div>
 </div>
 
-<!-- Order Status Modal -->
-<div class="modal fade" id="orderStatusModal" tabindex="-1" aria-labelledby="orderStatusModalLabel" aria-hidden="true">
+<!-- Status Update Modal -->
+<div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="orderStatusModalLabel">Update Order Status</h5>
+                <h5 class="modal-title" id="statusModalLabel">Update Order Status</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="orderStatusForm" method="POST">
+            <form onsubmit="event.preventDefault(); bootstrap.Modal.getInstance(document.getElementById('statusModal')).hide(); alert('Order status updated successfully (Mockup mode).');">
                 <div class="modal-body">
+                    <p>Updating status for <strong id="modalOrderId">#ORD-7829</strong></p>
                     <div class="mb-3">
-                        <label for="order_status" class="form-label">Order Status</label>
-                        <select class="form-select" id="order_status" name="status" required>
-                            <option value="pending">Pending</option>
-                            <option value="processing">Processing</option>
-                            <option value="shipped">Shipped</option>
-                            <option value="delivered">Delivered</option>
-                            <option value="cancelled">Cancelled</option>
+                        <label for="order_status_select" class="form-label">Fulfillment Status</label>
+                        <select class="form-select" id="order_status_select">
+                            <option value="Pending">Pending</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
                         </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="status_note" class="form-label">Note (Optional)</label>
-                        <textarea class="form-control" id="status_note" name="note" rows="3" placeholder="Add a note about this status change..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -294,189 +334,10 @@ $content = ob_start();
     </div>
 </div>
 
-<!-- Payment Status Modal -->
-<div class="modal fade" id="paymentStatusModal" tabindex="-1" aria-labelledby="paymentStatusModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="paymentStatusModalLabel">Update Payment Status</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="paymentStatusForm" method="POST">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="payment_status_select" class="form-label">Payment Status</label>
-                        <select class="form-select" id="payment_status_select" name="payment_status" required>
-                            <option value="pending">Pending</option>
-                            <option value="paid">Paid</option>
-                            <option value="failed">Failed</option>
-                            <option value="refunded">Refunded</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="payment_note" class="form-label">Note (Optional)</label>
-                        <textarea class="form-control" id="payment_note" name="note" rows="3" placeholder="Add a note about this payment change..."></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Payment</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<?php
-$content = ob_get_clean();
-
-// Orders-specific JavaScript
-$inline_scripts = '
-let currentOrderId = null;
-
-function updateOrderStatus(orderId) {
-    currentOrderId = orderId;
-    const actionUrl = window.OneStoreAdmin.adminUrl("orders/update-status?id=" + orderId);
-    
-    document.getElementById("orderStatusForm").action = actionUrl;
-    
-    // Reset form
-    document.getElementById("order_status").value = "pending";
-    document.getElementById("status_note").value = "";
-    
-    new bootstrap.Modal(document.getElementById("orderStatusModal")).show();
+<script>
+function updateStatus(orderId, currentStatus) {
+    document.getElementById('modalOrderId').textContent = '#' + orderId;
+    document.getElementById('order_status_select').value = currentStatus;
+    new bootstrap.Modal(document.getElementById('statusModal')).show();
 }
-
-function updatePaymentStatus(orderId) {
-    currentOrderId = orderId;
-    const actionUrl = window.OneStoreAdmin.adminUrl("orders/update-payment-status?id=" + orderId);
-    
-    document.getElementById("paymentStatusForm").action = actionUrl;
-    
-    // Reset form
-    document.getElementById("payment_status_select").value = "pending";
-    document.getElementById("payment_note").value = "";
-    
-    new bootstrap.Modal(document.getElementById("paymentStatusModal")).show();
-}
-
-// Order status form submission
-document.getElementById("orderStatusForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const submitBtn = this.querySelector("button[type=submit]");
-    const originalText = submitBtn.textContent;
-    
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Updating...";
-    
-    fetch(this.action, {
-        method: "POST",
-        body: formData
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("HTTP error! status: " + response.status);
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            const modal = bootstrap.Modal.getInstance(document.getElementById("orderStatusModal"));
-            
-            // Update button to show success
-            submitBtn.textContent = "✓ Updated!";
-            submitBtn.className = "btn btn-success";
-            
-            // Close modal and reload after brief delay
-            setTimeout(() => {
-                if (modal) {
-                    modal.hide();
-                }
-                
-                if (typeof swal !== "undefined") {
-                    swal("Success!", "Order status updated successfully", "success").then(() => {
-                        window.location.reload();
-                    });
-                } else {
-                    alert("Order status updated successfully!");
-                    window.location.reload();
-                }
-            }, 500);
-            
-        } else {
-            alert(data.message || "An error occurred");
-        }
-    })
-    .catch(error => {
-        alert("An error occurred while updating the order status: " + error.message);
-    })
-    .finally(() => {
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
-    });
-});
-
-// Payment status form submission
-document.getElementById("paymentStatusForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const submitBtn = this.querySelector("button[type=submit]");
-    const originalText = submitBtn.textContent;
-    
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Updating...";
-    
-    fetch(this.action, {
-        method: "POST",
-        body: formData
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("HTTP error! status: " + response.status);
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            const modal = bootstrap.Modal.getInstance(document.getElementById("paymentStatusModal"));
-            
-            // Update button to show success
-            submitBtn.textContent = "✓ Updated!";
-            submitBtn.className = "btn btn-success";
-            
-            // Close modal and reload after brief delay
-            setTimeout(() => {
-                if (modal) {
-                    modal.hide();
-                }
-                
-                if (typeof swal !== "undefined") {
-                    swal("Success!", "Payment status updated successfully", "success").then(() => {
-                        window.location.reload();
-                    });
-                } else {
-                    alert("Payment status updated successfully!");
-                    window.location.reload();
-                }
-            }, 500);
-            
-        } else {
-            alert(data.message || "An error occurred");
-        }
-    })
-    .catch(error => {
-        alert("An error occurred while updating the payment status: " + error.message);
-    })
-    .finally(() => {
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
-    });
-});
-';
-
-// Include the admin layout
-include ROOT_PATH . '/app/Views/Admin/layouts/admin.php';
-?> 
+</script>

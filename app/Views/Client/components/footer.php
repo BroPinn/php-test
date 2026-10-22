@@ -1,5 +1,3 @@
-<?php use App\Helpers\Helper; ?>
-
 <!-- Footer -->
 <footer class="bg3 p-t-75 p-b-32">
     <div class="container">
@@ -11,59 +9,40 @@
 
                 <ul>
                     <li class="p-b-10">
-                        <a href="/shop?category=women" class="stext-107 cl7 hov-cl1 trans-04">
-                            Women
-                        </a>
+                        <a href="<?= url('shop') ?>" class="stext-107 cl7 hov-cl1 trans-04">Women</a>
                     </li>
-
                     <li class="p-b-10">
-                        <a href="/shop?category=men" class="stext-107 cl7 hov-cl1 trans-04">
-                            Men
-                        </a>
+                        <a href="<?= url('shop') ?>" class="stext-107 cl7 hov-cl1 trans-04">Men</a>
                     </li>
-
                     <li class="p-b-10">
-                        <a href="/shop?category=shoes" class="stext-107 cl7 hov-cl1 trans-04">
-                            Shoes
-                        </a>
+                        <a href="<?= url('shop') ?>" class="stext-107 cl7 hov-cl1 trans-04">Shoes</a>
                     </li>
-
                     <li class="p-b-10">
-                        <a href="/shop?category=watches" class="stext-107 cl7 hov-cl1 trans-04">
-                            Watches
-                        </a>
+                        <a href="<?= url('shop') ?>" class="stext-107 cl7 hov-cl1 trans-04">Watches</a>
                     </li>
                 </ul>
             </div>
 
             <div class="col-sm-6 col-lg-3 p-b-50">
                 <h4 class="stext-301 cl0 p-b-30">
-                    Help
+                    Help & Links
                 </h4>
 
                 <ul>
                     <li class="p-b-10">
-                        <a href="/track-order" class="stext-107 cl7 hov-cl1 trans-04">
-                            Track Order
-                        </a>
+                        <a href="<?= url('account') ?>" class="stext-107 cl7 hov-cl1 trans-04">My Account</a>
                     </li>
-
                     <li class="p-b-10">
-                        <a href="/returns" class="stext-107 cl7 hov-cl1 trans-04">
-                            Returns
-                        </a>
+                        <a href="<?= url('cart') ?>" class="stext-107 cl7 hov-cl1 trans-04">Shopping Cart</a>
                     </li>
-
                     <li class="p-b-10">
-                        <a href="/shipping" class="stext-107 cl7 hov-cl1 trans-04">
-                            Shipping
-                        </a>
+                        <a href="<?= url('checkout') ?>" class="stext-107 cl7 hov-cl1 trans-04">Checkout</a>
                     </li>
-
                     <li class="p-b-10">
-                        <a href="/faqs" class="stext-107 cl7 hov-cl1 trans-04">
-                            FAQs
-                        </a>
+                        <a href="<?= url('about') ?>" class="stext-107 cl7 hov-cl1 trans-04">About OneStore</a>
+                    </li>
+                    <li class="p-b-10">
+                        <a href="<?= url('contact') ?>" class="stext-107 cl7 hov-cl1 trans-04">Contact Us</a>
                     </li>
                 </ul>
             </div>
@@ -81,11 +60,9 @@
                     <a href="#" class="fs-18 cl7 hov-cl1 trans-04 m-r-16">
                         <i class="fa fa-facebook"></i>
                     </a>
-
                     <a href="#" class="fs-18 cl7 hov-cl1 trans-04 m-r-16">
                         <i class="fa fa-instagram"></i>
                     </a>
-
                     <a href="#" class="fs-18 cl7 hov-cl1 trans-04 m-r-16">
                         <i class="fa fa-pinterest-p"></i>
                     </a>
@@ -97,14 +74,14 @@
                     Newsletter
                 </h4>
 
-                <form>
+                <form onsubmit="event.preventDefault(); alert('Thank you for subscribing!');">
                     <div class="wrap-input1 w-full p-b-4">
-                        <input class="input1 bg-none plh1 stext-107 cl7" type="text" name="email" placeholder="email@example.com">
+                        <input class="input1 bg-none plh1 stext-107 cl7" type="email" name="email" placeholder="email@example.com" required>
                         <div class="focus-input1 trans-04"></div>
                     </div>
 
                     <div class="p-t-18">
-                        <button class="flex-c-m stext-101 cl0 size-103 bg1 bor1 hov-btn2 p-lr-15 trans-04">
+                        <button type="submit" class="flex-c-m stext-101 cl0 size-103 bg1 bor1 hov-btn2 p-lr-15 trans-04">
                             Subscribe
                         </button>
                     </div>
@@ -114,37 +91,16 @@
 
         <div class="p-t-40">
             <div class="flex-c-m flex-w p-b-18">
-                <a href="#" class="m-all-1">
-                    <img src="<?= Helper::asset('images/icons/icon-pay-01.png') ?>" alt="ICON-PAY">
-                </a>
-
-                <a href="#" class="m-all-1">
-                    <img src="<?= Helper::asset('images/icons/icon-pay-02.png') ?>" alt="ICON-PAY">
-                </a>
-
-                <a href="#" class="m-all-1">
-                    <img src="<?= Helper::asset('images/icons/icon-pay-03.png') ?>" alt="ICON-PAY">
-                </a>
-
-                <a href="#" class="m-all-1">
-                    <img src="<?= Helper::asset('images/icons/icon-pay-04.png') ?>" alt="ICON-PAY">
-                </a>
-
-                <a href="#" class="m-all-1">
-                    <img src="<?= Helper::asset('images/icons/icon-pay-05.png') ?>" alt="ICON-PAY">
-                </a>
+                <span class="m-all-1"><img src="<?= asset('images/icons/icon-pay-01.png') ?>" alt="ICON-PAY"></span>
+                <span class="m-all-1"><img src="<?= asset('images/icons/icon-pay-02.png') ?>" alt="ICON-PAY"></span>
+                <span class="m-all-1"><img src="<?= asset('images/icons/icon-pay-03.png') ?>" alt="ICON-PAY"></span>
+                <span class="m-all-1"><img src="<?= asset('images/icons/icon-pay-04.png') ?>" alt="ICON-PAY"></span>
+                <span class="m-all-1"><img src="<?= asset('images/icons/icon-pay-05.png') ?>" alt="ICON-PAY"></span>
             </div>
 
             <p class="stext-107 cl6 txt-center">
-                Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | Made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a> &amp; distributed by <a href="https://themewagon.com" target="_blank">ThemeWagon</a>
+                Copyright &copy; <?= date('Y') ?> OneStore. All rights reserved.
             </p>
         </div>
     </div>
 </footer>
-
-<!-- Back to top -->
-<div class="btn-back-to-top" id="myBtn">
-    <span class="symbol-btn-back-to-top">
-        <i class="zmdi zmdi-chevron-up"></i>
-    </span>
-</div> 

@@ -1,41 +1,38 @@
-<?php
-use App\Helpers\Helper;
-
-$page_title = 'Brand Management';
-$content = ob_start();
-?>
-
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2"><i class="fas fa-tags me-2"></i>Brand Management</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#brandModal" onclick="openCreateModal()">
-            <i class="fas fa-plus me-1"></i>Add New Brand
-        </button>
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="mb-1">
+            <i class="fas fa-tag text-primary me-2"></i>Brand Management
+        </h2>
+        <p class="text-muted mb-0">Manage manufacturer and designer brands</p>
     </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#brandModal" onclick="openCreateModal()">
+        <i class="fas fa-plus me-2"></i>Add New Brand
+    </button>
 </div>
 
 <!-- Statistics Cards -->
 <div class="row g-4 mb-4">
-    <div class="col-sm-6 col-md-3">
+    <div class="col-sm-6 col-md-4">
         <div class="card card-stats card-round">
             <div class="card-body py-3">
                 <div class="row align-items-center">
                     <div class="col-icon">
                         <div class="icon-big text-center icon-primary bubble-shadow-small">
-                            <i class="fas fa-tags"></i>
+                            <i class="fas fa-tag"></i>
                         </div>
                     </div>
                     <div class="col col-stats ms-3 ms-sm-0">
                         <div class="numbers">
                             <p class="card-category">Total Brands</p>
-                            <h4 class="card-title"><?= $stats['total_brands'] ?? 0 ?></h4>
+                            <h4 class="card-title">8</h4>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-md-3">
+    <div class="col-sm-6 col-md-4">
         <div class="card card-stats card-round">
             <div class="card-body py-3">
                 <div class="row align-items-center">
@@ -47,45 +44,26 @@ $content = ob_start();
                     <div class="col col-stats ms-3 ms-sm-0">
                         <div class="numbers">
                             <p class="card-category">Active Brands</p>
-                            <h4 class="card-title"><?= $stats['active_brands'] ?? 0 ?></h4>
+                            <h4 class="card-title">8</h4>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-md-3">
+    <div class="col-sm-6 col-md-4">
         <div class="card card-stats card-round">
             <div class="card-body py-3">
                 <div class="row align-items-center">
                     <div class="col-icon">
-                        <div class="icon-big text-center icon-info bubble-shadow-small">
-                            <i class="fas fa-box"></i>
+                        <div class="icon-big text-center icon-warning bubble-shadow-small">
+                            <i class="fas fa-star"></i>
                         </div>
                     </div>
                     <div class="col col-stats ms-3 ms-sm-0">
                         <div class="numbers">
-                            <p class="card-category">Branded Products</p>
-                            <h4 class="card-title"><?= $stats['products_with_brands'] ?? 0 ?></h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-sm-6 col-md-3">
-        <div class="card card-stats card-round">
-            <div class="card-body py-3">
-                <div class="row align-items-center">
-                    <div class="col-icon">
-                        <div class="icon-big text-center icon-secondary bubble-shadow-small">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                    </div>
-                    <div class="col col-stats ms-3 ms-sm-0">
-                        <div class="numbers">
-                            <p class="card-category">Unbranded Products</p>
-                            <h4 class="card-title"><?= $stats['unbranded_products'] ?? 0 ?></h4>
+                            <p class="card-category">Featured Brands</p>
+                            <h4 class="card-title">4</h4>
                         </div>
                     </div>
                 </div>
@@ -94,122 +72,221 @@ $content = ob_start();
     </div>
 </div>
 
-<!-- Brands List -->
+<!-- Brands Table -->
 <div class="card">
-    <div class="card-header">
-        <h5 class="card-title mb-0">Brands List</h5>
-    </div>
-    <div class="card-body">
-        <!-- Filters -->
-        <form method="GET" class="row g-3 mb-4">
-            <div class="col-md-4">
-                <input type="text" class="form-control" name="search" placeholder="Search brands..." 
-                       value="<?= htmlspecialchars($filters['search'] ?? '') ?>">
-            </div>
-            <div class="col-md-3">
-                <select class="form-select" name="status">
-                    <option value="">All Status</option>
-                    <option value="active" <?= ($filters['status'] ?? '') === 'active' ? 'selected' : '' ?>>Active</option>
-                    <option value="inactive" <?= ($filters['status'] ?? '') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button type="submit" class="btn btn-outline-primary w-100">
-                    <i class="fas fa-search me-1"></i>Filter
-                </button>
-            </div>
-            <div class="col-md-2">
-                <a href="/admin/brands" class="btn btn-outline-secondary w-100">
-                    <i class="fas fa-times me-1"></i>Clear
-                </a>
-            </div>
-        </form>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 70px;">ID</th>
+                        <th>Brand Name</th>
+                        <th>Description</th>
+                        <th>Total Products</th>
+                        <th>Featured</th>
+                        <th>Status</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>#1</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-2 bg-dark text-white rounded d-flex align-items-center justify-content-center fw-bold">
+                                    NK
+                                </div>
+                                <span class="fw-bold">Nike</span>
+                            </div>
+                        </td>
+                        <td><small class="text-muted">Athletic footwear, training gear and sportswear</small></td>
+                        <td><span class="badge bg-light text-dark border">12 products</span></td>
+                        <td><span class="badge bg-warning text-dark"><i class="fas fa-star me-1"></i>Featured</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editBrand('Nike', 'Athletic footwear, training gear and sportswear', true)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(1)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
 
-        <?php if (empty($brands)): ?>
-            <div class="text-center py-5">
-                <i class="fas fa-tags fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">No brands found</h5>
-                <p class="text-muted">Start by adding your first brand to organize your products.</p>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#brandModal" onclick="openCreateModal()">
-                    <i class="fas fa-plus me-1"></i>Add First Brand
-                </button>
-            </div>
-        <?php else: ?>
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Products</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($brands as $brand): ?>
-                            <tr>
-                                <td><strong>#<?= $brand['brandID'] ?></strong></td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <?php if (!empty($brand['logo'])): ?>
-                                            <img src="<?= Helper::upload($brand['logo']) ?>" 
-                                                 alt="<?= htmlspecialchars($brand['name'] ?? 'Unnamed Brand') ?>" 
-                                                 class="me-2 rounded"
-                                                 style="width: 50px; height: 50px; object-fit: cover;">
-                                        <?php else: ?>
-                                            <div class="me-2 rounded bg-light d-flex align-items-center justify-content-center"
-                                                 style="width: 50px; height: 50px;">
-                                                <i class="fas fa-image text-muted"></i>
-                                            </div>
-                                        <?php endif; ?>
-                                        <div>
-                                            <strong><?= htmlspecialchars($brand['name'] ?? 'Unnamed Brand') ?></strong>
-                                            <?php if (!empty($brand['description'])): ?>
-                                                <br><small class="text-muted"><?= htmlspecialchars(substr($brand['description'], 0, 50)) ?><?= strlen($brand['description']) > 50 ? '...' : '' ?></small>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge bg-info"><?= $brand['product_count'] ?> Products</span>
-                                    <?php if ($brand['active_product_count'] != $brand['product_count']): ?>
-                                        <br><small class="text-muted"><?= $brand['active_product_count'] ?> active</small>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php if ($brand['status'] == 1): ?>
-                                        <span class="badge bg-success">Active</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-secondary">Inactive</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <small class="text-muted">
-                                        <?= date('M j, Y', strtotime($brand['created_at'])) ?>
-                                    </small>
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
-                                        <button type="button" class="btn btn-outline-primary" onclick="editBrand(<?= $brand['brandID'] ?>)" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-outline-danger" onclick="deleteBrand(<?= $brand['brandID'] ?>)" title="Delete">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
+                    <tr>
+                        <td><strong>#2</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-2 bg-secondary text-white rounded d-flex align-items-center justify-content-center fw-bold">
+                                    ZR
+                                </div>
+                                <span class="fw-bold">Zara</span>
+                            </div>
+                        </td>
+                        <td><small class="text-muted">Contemporary European fashion, coats, and urban apparel</small></td>
+                        <td><span class="badge bg-light text-dark border">10 products</span></td>
+                        <td><span class="badge bg-warning text-dark"><i class="fas fa-star me-1"></i>Featured</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editBrand('Zara', 'Contemporary European fashion, coats, and urban apparel', true)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(2)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#3</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-2 bg-primary text-white rounded d-flex align-items-center justify-content-center fw-bold">
+                                    RL
+                                </div>
+                                <span class="fw-bold">Ralph Lauren</span>
+                            </div>
+                        </td>
+                        <td><small class="text-muted">Classic polo shirts, oxford button-downs, and luxury knitwear</small></td>
+                        <td><span class="badge bg-light text-dark border">8 products</span></td>
+                        <td><span class="badge bg-warning text-dark"><i class="fas fa-star me-1"></i>Featured</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editBrand('Ralph Lauren', 'Classic polo shirts, oxford button-downs, and luxury knitwear', true)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(3)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#4</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-2 bg-danger text-white rounded d-flex align-items-center justify-content-center fw-bold">
+                                    LV
+                                </div>
+                                <span class="fw-bold">Levi's</span>
+                            </div>
+                        </td>
+                        <td><small class="text-muted">Authentic denim jeans, jackets, and heritage workwear</small></td>
+                        <td><span class="badge bg-light text-dark border">6 products</span></td>
+                        <td><span class="badge bg-warning text-dark"><i class="fas fa-star me-1"></i>Featured</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editBrand('Levi\'s', 'Authentic denim jeans, jackets, and heritage workwear', true)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(4)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#5</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-2 bg-info text-white rounded d-flex align-items-center justify-content-center fw-bold">
+                                    FS
+                                </div>
+                                <span class="fw-bold">Fossil</span>
+                            </div>
+                        </td>
+                        <td><small class="text-muted">Timepieces, minimalist chronograph watches, and leather bags</small></td>
+                        <td><span class="badge bg-light text-dark border">4 products</span></td>
+                        <td><span class="badge bg-light text-muted border">Standard</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editBrand('Fossil', 'Timepieces, minimalist chronograph watches, and leather bags', false)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(5)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#6</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-2 bg-success text-white rounded d-flex align-items-center justify-content-center fw-bold">
+                                    GC
+                                </div>
+                                <span class="fw-bold">Gucci</span>
+                            </div>
+                        </td>
+                        <td><small class="text-muted">High-end Italian luxury bags, leather belts, and accessories</small></td>
+                        <td><span class="badge bg-light text-dark border">3 products</span></td>
+                        <td><span class="badge bg-light text-muted border">Standard</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editBrand('Gucci', 'High-end Italian luxury bags, leather belts, and accessories', false)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(6)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#7</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-2 bg-dark text-white rounded d-flex align-items-center justify-content-center fw-bold">
+                                    RB
+                                </div>
+                                <span class="fw-bold">Ray-Ban</span>
+                            </div>
+                        </td>
+                        <td><small class="text-muted">Iconic aviator sunglasses and polarized premium eyewear</small></td>
+                        <td><span class="badge bg-light text-dark border">3 products</span></td>
+                        <td><span class="badge bg-light text-muted border">Standard</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editBrand('Ray-Ban', 'Iconic aviator sunglasses and polarized premium eyewear', false)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(7)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#8</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm me-2 bg-primary text-white rounded d-flex align-items-center justify-content-center fw-bold">
+                                    AD
+                                </div>
+                                <span class="fw-bold">Adidas</span>
+                            </div>
+                        </td>
+                        <td><small class="text-muted">Originals sneakers, activewear, and running essentials</small></td>
+                        <td><span class="badge bg-light text-dark border">2 products</span></td>
+                        <td><span class="badge bg-light text-muted border">Standard</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editBrand('Adidas', 'Originals sneakers, activewear, and running essentials', false)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(8)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<!-- Brand Modal -->
+<!-- Add/Edit Brand Modal -->
 <div class="modal fade" id="brandModal" tabindex="-1" aria-labelledby="brandModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -217,160 +294,60 @@ $content = ob_start();
                 <h5 class="modal-title" id="brandModalLabel">Add New Brand</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="brandForm" method="POST" enctype="multipart/form-data" action="<?= Helper::adminUrl('brands/store') ?>">
+            <form id="brandForm" onsubmit="event.preventDefault(); bootstrap.Modal.getInstance(document.getElementById('brandModal')).hide(); alert('Brand saved successfully (Mockup mode).');">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="name" class="form-label">Brand Name *</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
+                        <label for="brand_name" class="form-label">Brand Name *</label>
+                        <input type="text" class="form-control" id="brand_name" required placeholder="e.g. Calvin Klein">
                     </div>
                     <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Brief brand description..."></textarea>
+                        <label for="brand_desc" class="form-label">Description</label>
+                        <textarea class="form-control" id="brand_desc" rows="3" placeholder="Brand overview and details..."></textarea>
                     </div>
                     <div class="mb-3">
-                        <label for="status" class="form-label">Status</label>
-                        <select class="form-select" id="status" name="status">
-                            <option value="1">Active</option>
-                            <option value="0">Inactive</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="logo" class="form-label">Brand Logo</label>
-                        <input type="file" class="form-control" id="logo" name="logo" accept="image/*">
-                        <small class="form-text text-muted">Supported formats: JPG, PNG, GIF, WebP (Max 5MB)</small>
-                        <div id="logoPreview" class="mt-2" style="display: none;">
-                            <img id="preview" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="brand_featured">
+                            <label class="form-check-label" for="brand_featured">
+                                Mark as Featured Brand
+                            </label>
                         </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="brand_status" class="form-label">Status</label>
+                        <select class="form-select" id="brand_status">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Brand</button>
+                    <button type="submit" class="btn btn-primary" id="saveBrandBtn">Save Brand</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<?php
-$content = ob_get_clean();
-
-// Brands-specific JavaScript
-$inline_scripts = '
-// Brand Management JavaScript
-let editMode = false;
-let editId = null;
-
+<script>
 function openCreateModal() {
-    editMode = false;
-    editId = null;
-    document.getElementById("brandModalLabel").textContent = "Add New Brand";
-    document.getElementById("brandForm").reset();
-    document.getElementById("logoPreview").style.display = "none";
-    document.getElementById("brandForm").action = window.OneStoreAdmin.adminUrl("/brands/store");
+    document.getElementById('brandModalLabel').textContent = 'Add New Brand';
+    document.getElementById('brandForm').reset();
+    document.getElementById('saveBrandBtn').textContent = 'Create Brand';
 }
 
-function editBrand(id) {
-    editMode = true;
-    editId = id;
-    document.getElementById("brandModalLabel").textContent = "Edit Brand";
-    
-    // Fetch brand data
-    fetch(window.OneStoreAdmin.adminUrl(`/brands/get?id=${id}`))
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const brand = data.brand;
-                document.getElementById("name").value = brand.name;
-                document.getElementById("description").value = brand.description || "";
-                document.getElementById("status").value = brand.status;
-                
-                // Show existing logo if available
-                if (brand.logo) {
-                    document.getElementById("preview").src = window.OneStoreAdmin.baseUrl + "/uploads/" + brand.logo;
-                    document.getElementById("logoPreview").style.display = "block";
-                }
-                
-                document.getElementById("brandForm").action = window.OneStoreAdmin.adminUrl(`/brands/update?id=${id}`);
-                new bootstrap.Modal(document.getElementById("brandModal")).show();
-            }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("Error loading brand data");
-        });
+function editBrand(name, desc, featured) {
+    document.getElementById('brandModalLabel').textContent = 'Edit Brand: ' + name;
+    document.getElementById('brand_name').value = name;
+    document.getElementById('brand_desc').value = desc;
+    document.getElementById('brand_featured').checked = featured;
+    document.getElementById('saveBrandBtn').textContent = 'Save Changes';
+    new bootstrap.Modal(document.getElementById('brandModal')).show();
 }
 
-function deleteBrand(id) {
-    if (confirm("Are you sure you want to delete this brand?")) {
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = window.OneStoreAdmin.adminUrl(`/brands/delete?id=${id}`);
-        
-        // Add brandID as hidden field
-        const brandIDInput = document.createElement("input");
-        brandIDInput.type = "hidden";
-        brandIDInput.name = "brandID";
-        brandIDInput.value = id;
-        form.appendChild(brandIDInput);
-        
-        document.body.appendChild(form);
-        form.submit();
+function confirmDelete(id) {
+    if (confirm('Are you sure you want to delete this brand? (Mockup mode)')) {
+        alert('Brand deleted successfully (Mockup mode).');
     }
 }
-
-// Logo preview functionality
-document.getElementById("logo").addEventListener("change", function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById("preview").src = e.target.result;
-            document.getElementById("logoPreview").style.display = "block";
-        };
-        reader.readAsDataURL(file);
-    } else {
-        document.getElementById("logoPreview").style.display = "none";
-    }
-});
-
-// Form submission
-document.getElementById("brandForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const submitBtn = this.querySelector("button[type=submit]");
-    const originalText = submitBtn.textContent;
-    
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Saving...";
-    
-    fetch(this.action, {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            bootstrap.Modal.getInstance(document.getElementById("brandModal")).hide();
-            location.reload();
-        } else {
-            alert(data.message || "An error occurred");
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        alert("An error occurred while saving the brand");
-    })
-    .finally(() => {
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
-    });
-});
-
-console.log("Brand management loaded successfully");
-';
-
-// Include the admin layout
-include ROOT_PATH . '/app/Views/Admin/layouts/admin.php';
-?> 
+</script>

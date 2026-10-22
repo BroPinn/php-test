@@ -1,13 +1,6 @@
-<?php
-use App\Helpers\Helper;
-
-$page_title = '404 - Admin Page Not Found | OneStore Admin';
-$content = ob_start();
-?>
-
-<div class="row justify-content-center">
+<div class="row justify-content-center py-5">
     <div class="col-md-8 col-lg-6">
-        <div class="card">
+        <div class="card border-0 shadow-sm">
             <div class="card-body text-center p-5">
                 <!-- Error Icon -->
                 <div class="mb-4">
@@ -20,29 +13,27 @@ $content = ob_start();
                 
                 <!-- Error Message -->
                 <p class="text-muted mb-4">
-                    The admin page you are looking for could not be found. 
-                    It might have been moved, deleted, or you don't have permission to access it.
+                    The admin page you requested could not be found or does not exist.
                 </p>
                 
                 <!-- Action Buttons -->
                 <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                    <a href="<?= Helper::adminUrl('dashboard') ?>" class="btn btn-primary me-md-2">
-                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    <a href="<?= admin_url('dashboard') ?>" class="btn btn-primary me-md-2">
+                        <i class="fas fa-tachometer-alt me-2"></i>Return to Dashboard
                     </a>
-                    <a href="<?= Helper::adminUrl('products') ?>" class="btn btn-outline-primary">
+                    <a href="<?= admin_url('products') ?>" class="btn btn-outline-primary">
                         <i class="fas fa-box me-2"></i>Products
                     </a>
                 </div>
                 
                 <!-- Additional Links -->
-                <div class="mt-4">
-                    <p class="small text-muted">
-                        <a href="<?= Helper::url('') ?>" target="_blank" class="text-decoration-none">
-                            <i class="fas fa-external-link-alt me-1"></i>View Site
+                <div class="mt-4 pt-3 border-top">
+                    <p class="small text-muted mb-0">
+                        <a href="<?= url('') ?>" target="_blank" class="text-decoration-none me-3">
+                            <i class="fas fa-external-link-alt me-1"></i>View Storefront
                         </a>
-                        |
-                        <a href="<?= Helper::adminUrl('logout') ?>" class="text-decoration-none">
-                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                        <a href="<?= admin_url('login') ?>" class="text-decoration-none">
+                            <i class="fas fa-sign-out-alt me-1"></i>Admin Logout
                         </a>
                     </p>
                 </div>
@@ -50,10 +41,3 @@ $content = ob_start();
         </div>
     </div>
 </div>
-
-<?php
-$content = ob_get_clean();
-
-// Include the admin layout
-include ROOT_PATH . '/app/Views/Admin/layouts/admin.php';
-?> 

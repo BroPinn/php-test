@@ -1,4 +1,3 @@
-<?php use App\Helpers\Helper; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,10 +5,7 @@
     <title><?= $page_title ?? 'OneStore Admin' ?></title>
     <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport" />
     
-    <!-- CSRF Token -->
-    <meta name="csrf-token" content="<?= $csrf_token ?? '' ?>">
-    
-    <link rel="icon" type="image/png" href="<?= Helper::asset('images/icons/favicon.png') ?>"/>
+    <link rel="icon" type="image/png" href="<?= asset('images/icons/favicon.png') ?>"/>
 
     <!-- Fonts and icons -->
     <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/plugin/webfont/webfont.min.js"></script>
@@ -35,50 +31,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/css/plugins.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/css/kaiadmin.min.css">
-    
-    <!-- Additional CSS -->
-    <?php if (isset($additional_css)): ?>
-        <?php foreach ($additional_css as $css): ?>
-            <link href="<?= Helper::asset($css) ?>" rel="stylesheet">
-        <?php endforeach; ?>
-    <?php endif; ?>
 </head>
 <body>
     <div class="wrapper">
-        <!-- Flash Messages -->
-        <?php if (!empty($success) || !empty($error) || !empty($flash_messages)): ?>
-            <div class="position-fixed top-0 end-0 p-3" style="z-index: 1080; min-width: 300px;">
-                <?php if (!empty($success)): ?>
-                    <div class="alert alert-success alert-dismissible fade show shadow-sm mb-2">
-                        <i class="fas fa-check-circle me-2"></i><?= htmlspecialchars($success) ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                <?php endif; ?>
-                
-                <?php if (!empty($error)): ?>
-                    <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-2">
-                        <i class="fas fa-exclamation-circle me-2"></i><?= htmlspecialchars($error) ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                <?php endif; ?>
-                
-                <?php if (!empty($flash_messages)): ?>
-                    <?php foreach ($flash_messages as $type => $message): ?>
-                        <div class="alert alert-<?= $type === 'error' ? 'danger' : $type ?> alert-dismissible fade show shadow-sm mb-2">
-                            <?= $message ?>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
-        <?php endif; ?>
-
         <!-- Sidebar -->
-        <?php include ROOT_PATH . '/app/Views/Admin/components/sidebar.php'; ?>
+        <?php include __DIR__ . '/../components/sidebar.php'; ?>
 
         <div class="main-panel">
             <!-- Header -->
-            <?php include ROOT_PATH . '/app/Views/Admin/components/header.php'; ?>
+            <?php include __DIR__ . '/../components/header.php'; ?>
 
             <div class="container">
                 <div class="page-inner">
@@ -88,7 +49,7 @@
             </div>
 
             <!-- Footer -->
-            <?php include ROOT_PATH . '/app/Views/Admin/components/footer.php'; ?>
+            <?php include __DIR__ . '/../components/footer.php'; ?>
         </div>
     </div>
 
@@ -100,57 +61,19 @@
     <!-- jQuery Scrollbar -->
     <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
 
-    <!-- Chart JS -->
-    <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/plugin/chart.js/chart.min.js"></script>
-
-    <!-- jQuery Sparkline -->
-    <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/plugin/jquery.sparkline/jquery.sparkline.min.js"></script>
-
-    <!-- Chart Circle -->
-    <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/plugin/chart-circle/circles.min.js"></script>
-
-    <!-- Datatables -->
-    <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/plugin/datatables/datatables.min.js"></script>
-
-    <!-- Bootstrap Notify -->
-    <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/plugin/bootstrap-notify/bootstrap-notify.min.js"></script>
-
-    <!-- jQuery Vector Maps -->
-    <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/plugin/jsvectormap/jsvectormap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/plugin/jsvectormap/world.js"></script>
-
-    <!-- Sweet Alert -->
-    <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/plugin/sweetalert/sweetalert.min.js"></script>
-
     <!-- Kaiadmin JS -->
     <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/kaiadmin.min.js"></script>
 
-    <!-- Additional JS -->
-    <?php if (isset($additional_js)): ?>
-        <?php foreach ($additional_js as $js): ?>
-            <script src="<?= Helper::asset($js) ?>"></script>
-        <?php endforeach; ?>
-    <?php endif; ?>
-
-    <!-- OneStore Admin Configuration - FIXED for both Development & Production -->
+    <!-- OneStore Admin Configuration -->
     <script>
         window.OneStoreAdmin = {
-            baseUrl: '<?= APP_URL ?>',
+            baseUrl: '<?= url('') ?>',
             adminUrl: function(path) {
                 const cleanPath = (path || '').replace(/^\//, '');
-                const baseUrl = '<?= APP_URL ?>';
-                return baseUrl + '/admin/' + cleanPath;
+                return '<?= admin_url('') ?>' + cleanPath;
             },
-            assetUrl: '<?= Helper::asset('') ?>',
-            csrfToken: '<?= $csrf_token ?? '' ?>'
+            assetUrl: '<?= asset('') ?>'
         };
     </script>
-
-    <!-- Inline Scripts -->
-    <?php if (isset($inline_scripts)): ?>
-        <script>
-            <?= $inline_scripts ?>
-        </script>
-    <?php endif; ?>
 </body>
-</html> 
+</html>

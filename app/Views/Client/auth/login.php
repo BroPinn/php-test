@@ -1,47 +1,33 @@
-<?php use App\Helpers\Helper; ?>
-
-<!-- Login -->
+<!-- Login Page -->
 <div class="bg0 p-t-75 p-b-85">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6 col-lg-5">
-                <div class="bor10 p-lr-40 p-t-40 p-b-40">
+                <div class="bor10 p-lr-40 p-t-40 p-b-40 bg0">
                     <h3 class="mtext-111 cl2 txt-center p-b-30">
                         Sign In
                     </h3>
 
-                    <?php if (Helper::hasFlash('error')): ?>
-                        <div class="alert alert-danger m-b-20">
-                            <?= Helper::getFlash('error') ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <?php if (Helper::hasFlash('success')): ?>
-                        <div class="alert alert-success m-b-20">
-                            <?= Helper::getFlash('success') ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <form method="POST" action="/onestore/login">
+                    <form action="<?= url('account') ?>" method="GET">
                         <div class="p-b-20">
                             <label class="stext-102 cl3 p-b-5">Email Address *</label>
-                            <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20" type="email" name="email" required>
+                            <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20 w-full" type="email" name="email" value="customer@example.com" required>
                         </div>
 
                         <div class="p-b-25">
                             <label class="stext-102 cl3 p-b-5">Password *</label>
-                            <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20" type="password" name="password" required>
+                            <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20 w-full" type="password" name="password" value="password123" required>
                         </div>
 
                         <div class="flex-w flex-sb-m p-b-25">
                             <div class="flex-w">
-                                <input type="checkbox" id="remember_me" name="remember_me" class="m-r-8">
+                                <input type="checkbox" id="remember_me" name="remember_me" class="m-r-8" checked>
                                 <label for="remember_me" class="stext-113 cl6">
                                     Remember me
                                 </label>
                             </div>
                             
-                            <a href="/forgot-password" class="stext-113 cl6 hov-cl1 trans-04">
+                            <a href="#" class="stext-113 cl6 hov-cl1 trans-04">
                                 Forgot password?
                             </a>
                         </div>
@@ -54,7 +40,7 @@
                             <span class="stext-113 cl6">
                                 Don't have an account?
                             </span>
-                            <a href="/onestore/register" class="stext-113 cl2 hov-cl1 trans-04">
+                            <a href="<?= url('register') ?>" class="stext-113 cl2 hov-cl1 trans-04 font-weight-bold">
                                 Create Account
                             </a>
                         </div>

@@ -1,13 +1,12 @@
-<?php use App\Helpers\Helper; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?? 'Admin Login - OneStore' ?></title>
+    <title>Admin Login - OneStore</title>
 
-    <link rel="icon" type="image/png" href="<?= Helper::asset('images/icons/favicon.png') ?>"/>
+    <link rel="icon" type="image/png" href="<?= asset('images/icons/favicon.png') ?>"/>
 
     <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/plugin/webfont/webfont.min.js"></script>
     <script>
@@ -16,7 +15,7 @@
             custom: {
                 families: [
                     "Font Awesome 5 Solid",
-                    "Font Awesome 5 Regular",
+                    "Font Awesome 5 Regular", 
                     "Font Awesome 5 Brands",
                     "simple-line-icons"
                 ],
@@ -40,76 +39,59 @@
                     <div class="card-body p-4 p-md-5">
                         <div class="text-center mb-4">
                             <div class="mb-3">
-                                <span class="btn btn-primary btn-icon btn-round btn-lg disabled">
-                                    <i class="fas fa-shield-alt"></i>
+                                <span class="btn btn-primary btn-icon btn-round btn-lg disabled shadow-sm">
+                                    <i class="fas fa-shield-alt fa-2x"></i>
                                 </span>
                             </div>
                             <h2 class="fw-bold mb-1">OneStore Admin</h2>
-                            <p class="text-muted mb-0">Sign in to access the dashboard</p>
+                            <p class="text-muted mb-0">Sign in to access store administration</p>
                         </div>
 
-                        <?php if (!empty($error)): ?>
-                            <div class="alert alert-danger" role="alert">
-                                <i class="fas fa-exclamation-circle me-2"></i><?= htmlspecialchars($error) ?>
-                            </div>
-                        <?php endif; ?>
+                        <div class="alert alert-info py-2 small mb-4" role="alert">
+                            <i class="fas fa-info-circle me-1"></i> Demo Access: Enter any credentials to enter.
+                        </div>
 
-                        <?php if (!empty($success)): ?>
-                            <div class="alert alert-success" role="alert">
-                                <i class="fas fa-check-circle me-2"></i><?= htmlspecialchars($success) ?>
-                            </div>
-                        <?php endif; ?>
-
-                        <form method="POST" action="<?= Helper::adminUrl('login') ?>">
+                        <form action="<?= admin_url('dashboard') ?>" method="GET">
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-user"></i>
-                                    </span>
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        id="username"
-                                        name="username"
-                                        placeholder="Enter your username"
-                                        required
-                                        autocomplete="username"
-                                    >
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control" id="username" name="username" value="admin" required autofocus>
                                 </div>
                             </div>
 
-                            <div class="mb-4">
-                                <label for="password" class="form-label">Password</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-lock"></i>
-                                    </span>
-                                    <input
-                                        type="password"
-                                        class="form-control"
-                                        id="password"
-                                        name="password"
-                                        placeholder="Enter your password"
-                                        required
-                                        autocomplete="current-password"
-                                    >
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label for="password" class="form-label mb-0">Password</label>
+                                    <a href="#" class="small text-decoration-none">Forgot password?</a>
+                                </div>
+                                <div class="input-group mt-1">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="password" name="password" value="password" required>
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn btn-primary w-100">
-                                <i class="fas fa-sign-in-alt me-2"></i>Sign In
-                            </button>
+                            <div class="mb-4 form-check">
+                                <input type="checkbox" class="form-check-input" id="remember" checked>
+                                <label class="form-check-label" for="remember">Keep me logged in</label>
+                            </div>
+
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Sign In to Dashboard
+                                </button>
+                            </div>
+
+                            <div class="text-center">
+                                <a href="<?= url('') ?>" class="text-muted small text-decoration-none">
+                                    <i class="fas fa-arrow-left me-1"></i>Back to Storefront
+                                </a>
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/core/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/core/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/core/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/js/kaiadmin.min.js"></script>
 </body>
 </html>

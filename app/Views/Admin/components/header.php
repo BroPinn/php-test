@@ -1,10 +1,9 @@
-<?php use App\Helpers\Helper; ?>
 <!-- Main Header -->
 <div class="main-header">
     <div class="main-header-logo">
         <!-- Logo Header -->
         <div class="logo-header" data-background-color="dark">
-            <a href="<?= Helper::adminUrl('') ?>" class="logo">
+            <a href="<?= admin_url('dashboard') ?>" class="logo">
                 <img src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/img/kaiadmin/logo_light.svg" 
                      alt="navbar brand" class="navbar-brand" height="20" />
             </a>
@@ -32,7 +31,7 @@
                             <i class="fa fa-search search-icon"></i>
                         </button>
                     </div>
-                    <input type="text" placeholder="Search ..." class="form-control" />
+                    <input type="text" placeholder="Search products, orders, customers..." class="form-control" />
                 </div>
             </nav>
 
@@ -51,9 +50,9 @@
                     </ul>
                 </li>
 
-                <!-- View Site Link -->
+                <!-- View Storefront Link -->
                 <li class="nav-item topbar-icon">
-                    <a class="nav-link" href="<?= Helper::url('') ?>" target="_blank" title="View Site">
+                    <a class="nav-link" href="<?= url('') ?>" target="_blank" title="View Storefront">
                         <i class="fas fa-external-link-alt"></i>
                     </a>
                 </li>
@@ -67,34 +66,43 @@
                     </a>
                     <ul class="dropdown-menu notif-box animated fadeIn" aria-labelledby="notifDropdown">
                         <li>
-                            <div class="dropdown-title">You have 4 new notification</div>
+                            <div class="dropdown-title">You have 4 new notifications</div>
                         </li>
                         <li>
                             <div class="notif-scroll scrollbar-outer">
                                 <div class="notif-center">
-                                    <a href="#">
+                                    <a href="<?= admin_url('orders') ?>">
                                         <div class="notif-icon notif-primary">
-                                            <i class="fa fa-user-plus"></i>
+                                            <i class="fa fa-shopping-cart"></i>
                                         </div>
                                         <div class="notif-content">
-                                            <span class="block">New user registered</span>
+                                            <span class="block">New order #ORD-7829 received</span>
                                             <span class="time">5 minutes ago</span>
                                         </div>
                                     </a>
-                                    <a href="#">
+                                    <a href="<?= admin_url('customers') ?>">
                                         <div class="notif-icon notif-success">
-                                            <i class="fa fa-comment"></i>
+                                            <i class="fa fa-user-plus"></i>
                                         </div>
                                         <div class="notif-content">
-                                            <span class="block">New order received</span>
-                                            <span class="time">12 minutes ago</span>
+                                            <span class="block">New customer registered</span>
+                                            <span class="time">15 minutes ago</span>
+                                        </div>
+                                    </a>
+                                    <a href="<?= admin_url('products') ?>">
+                                        <div class="notif-icon notif-warning">
+                                            <i class="fa fa-exclamation-triangle"></i>
+                                        </div>
+                                        <div class="notif-content">
+                                            <span class="block">Product stock low alert</span>
+                                            <span class="time">1 hour ago</span>
                                         </div>
                                     </a>
                                 </div>
                             </div>
                         </li>
                         <li>
-                            <a class="see-all" href="<?= Helper::adminUrl('notifications') ?>">
+                            <a class="see-all" href="<?= admin_url('orders') ?>">
                                 See all notifications<i class="fa fa-angle-right"></i>
                             </a>
                         </li>
@@ -106,11 +114,11 @@
                     <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#" aria-expanded="false">
                         <div class="avatar-sm">
                             <img src="https://cdn.jsdelivr.net/gh/BroPinn/cdn-file@main/admin/img/profile.jpg" 
-                                 alt="..." class="avatar-img rounded-circle" />
+                                 alt="Admin" class="avatar-img rounded-circle" />
                         </div>
                         <span class="profile-username">
                             <span class="op-7">Hi,</span>
-                            <span class="fw-bold"><?= Helper::sanitize($admin_user['name'] ?? 'Admin') ?></span>
+                            <span class="fw-bold">Administrator</span>
                         </span>
                     </a>
                     <ul class="dropdown-menu dropdown-user animated fadeIn">
@@ -122,18 +130,18 @@
                                              alt="image profile" class="avatar-img rounded" />
                                     </div>
                                     <div class="u-text">
-                                        <h4><?= Helper::sanitize($admin_user['name'] ?? 'Admin') ?></h4>
-                                        <p class="text-muted"><?= Helper::sanitize($admin_user['email'] ?? 'admin@onestore.com') ?></p>
-                                        <a href="<?= Helper::adminUrl('profile') ?>" class="btn btn-xs btn-secondary btn-sm">View Profile</a>
+                                        <h4>Administrator</h4>
+                                        <p class="text-muted">admin@onestore.com</p>
+                                        <a href="<?= admin_url('dashboard') ?>" class="btn btn-xs btn-secondary btn-sm">Dashboard</a>
                                     </div>
                                 </div>
                             </li>
                             <li>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="<?= Helper::adminUrl('profile') ?>">My Profile</a>
-                                <a class="dropdown-item" href="<?= Helper::adminUrl('settings') ?>">Account Setting</a>
+                                <a class="dropdown-item" href="<?= admin_url('products') ?>">Manage Products</a>
+                                <a class="dropdown-item" href="<?= admin_url('orders') ?>">Manage Orders</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="<?= Helper::adminUrl('logout') ?>">Logout</a>
+                                <a class="dropdown-item" href="<?= admin_url('login') ?>">Logout</a>
                             </li>
                         </div>
                     </ul>
@@ -141,4 +149,4 @@
             </ul>
         </div>
     </nav>
-</div> 
+</div>

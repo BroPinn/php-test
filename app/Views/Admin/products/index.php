@@ -1,120 +1,299 @@
-<?php
-use App\Helpers\Helper;
-
-$page_title = 'Product Management - OneStore Admin';
-$content = ob_start();
-?>
-
 <!-- Page Header -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="mb-1">
             <i class="fas fa-box text-primary me-2"></i>Product Management
         </h2>
-        <p class="text-muted mb-0">Manage your store products</p>
+        <p class="text-muted mb-0">Manage and organize store catalog items</p>
     </div>
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productModal" onclick="openCreateModal()">
         <i class="fas fa-plus me-2"></i>Add New Product
     </button>
 </div>
 
-<!-- Products Table -->
-<div class="card">
+<!-- Filters and Search -->
+<div class="card mb-4">
     <div class="card-body">
-        <?php if (empty($products)): ?>
-            <div class="text-center py-5">
-                <i class="fas fa-box fa-3x text-muted mb-3"></i>
-                <h5 class="text-muted">No products found</h5>
-                <p class="text-muted">Start by adding your first product!</p>
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productModal" onclick="openCreateModal()">
-                    <i class="fas fa-plus me-2"></i>Add New Product
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Search product name or SKU...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select">
+                    <option value="">All Categories</option>
+                    <option value="women">Women</option>
+                    <option value="men">Men</option>
+                    <option value="accessories">Accessories</option>
+                    <option value="footwear">Footwear</option>
+                    <option value="watches">Watches</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select">
+                    <option value="">All Brands</option>
+                    <option value="zara">Zara</option>
+                    <option value="nike">Nike</option>
+                    <option value="levis">Levi's</option>
+                    <option value="fossil">Fossil</option>
+                    <option value="ralph">Ralph Lauren</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-secondary w-100">
+                    <i class="fas fa-filter me-1"></i>Filter
                 </button>
             </div>
-        <?php else: ?>
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Price</th>
-                            <th>Category</th>
-                            <th>Brand</th>
-                            <th>Stock</th>
-                            <th>Status</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($products as $product): ?>
-                            <tr>
-                                <td><strong>#<?= $product['productID'] ?></strong></td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <?php if (!empty($product['image_path'])): ?>
-                                            <img src="<?= Helper::upload($product['image_path']) ?>" 
-                                                 alt="<?= htmlspecialchars($product['name'] ?? 'Product') ?>" 
-                                                 class="me-2 rounded"
-                                                 style="width: 50px; height: 50px; object-fit: cover;">
-                                        <?php else: ?>
-                                            <div class="me-2 rounded bg-light d-flex align-items-center justify-content-center"
-                                                 style="width: 50px; height: 50px;">
-                                                <i class="fas fa-image text-muted"></i>
-                                            </div>
-                                        <?php endif; ?>
-                                        <div>
-                                            <div class="fw-bold"><?= htmlspecialchars($product['name'] ?? 'Unnamed Product') ?></div>
-                                            <small class="text-muted"><?= htmlspecialchars(substr($product['description'] ?? '', 0, 50)) ?>...</small>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><strong>$<?= number_format($product['price'] ?? 0, 2) ?></strong></td>
-                                <td>
-                                    <span class="badge bg-info"><?= htmlspecialchars($product['category_name'] ?? 'No Category') ?></span>
-                                </td>
-                                <td>
-                                    <span class="badge bg-secondary"><?= htmlspecialchars($product['brand_name'] ?? 'No Brand') ?></span>
-                                </td>
-                                <td>
-                                    <span class="<?= ($product['stock'] ?? 0) < 10 ? 'text-danger' : 'text-success' ?>">
-                                        <?= $product['stock'] ?? 0 ?> units
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="badge bg-<?= ($product['status'] ?? 0) == 1 ? 'success' : 'secondary' ?>">
-                                        <?= ($product['status'] ?? 0) == 1 ? 'Active' : 'Inactive' ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <small class="text-muted">
-                                        <?= date('M d, Y', strtotime($product['created_at'] ?? 'now')) ?>
-                                    </small>
-                                </td>
-                                <td>
-                                    <div class="d-flex gap-2">
-                                        <button class="btn btn-sm btn-outline-primary" 
-                                                onclick="editProduct(<?= $product['productID'] ?>)" 
-                                                title="Edit Product">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger" 
-                                                onclick="deleteProduct(<?= $product['productID'] ?>)" 
-                                                title="Delete Product">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
+        </div>
     </div>
 </div>
 
-<!-- Product Modal -->
+<!-- Products Table -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 70px;">ID</th>
+                        <th>Product Details</th>
+                        <th>Category</th>
+                        <th>Brand</th>
+                        <th>Price</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>#1</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="<?= asset('images/product-01.jpg') ?>" alt="Product" class="rounded me-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Women's Trench Coat</h6>
+                                    <small class="text-muted">SKU: W-COAT-01</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">Women</span></td>
+                        <td>Zara</td>
+                        <td class="fw-bold">$129.99</td>
+                        <td><span class="badge bg-success-light text-success fw-bold">24 in stock</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editProduct('Women\'s Trench Coat', 129.99, 'Women', 'Zara', 24, 'Active')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(1)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#2</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="<?= asset('images/product-02.jpg') ?>" alt="Product" class="rounded me-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Men's Slim Fit Shirt</h6>
+                                    <small class="text-muted">SKU: M-SHIRT-02</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">Men</span></td>
+                        <td>Ralph Lauren</td>
+                        <td class="fw-bold">$49.50</td>
+                        <td><span class="badge bg-success-light text-success fw-bold">42 in stock</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editProduct('Men\'s Slim Fit Shirt', 49.50, 'Men', 'Ralph Lauren', 42, 'Active')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(2)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#3</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="<?= asset('images/product-03.jpg') ?>" alt="Product" class="rounded me-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Classic Denim Jacket</h6>
+                                    <small class="text-muted">SKU: M-JACKET-03</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">Men</span></td>
+                        <td>Levi's</td>
+                        <td class="fw-bold">$89.00</td>
+                        <td><span class="badge bg-warning-light text-warning fw-bold">8 in stock</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editProduct('Classic Denim Jacket', 89.00, 'Men', 'Levi\'s', 8, 'Active')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(3)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#4</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="<?= asset('images/product-06.jpg') ?>" alt="Product" class="rounded me-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Minimalist Gold Watch</h6>
+                                    <small class="text-muted">SKU: W-WATCH-06</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">Watches</span></td>
+                        <td>Fossil</td>
+                        <td class="fw-bold">$159.00</td>
+                        <td><span class="badge bg-success-light text-success fw-bold">15 in stock</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editProduct('Minimalist Gold Watch', 159.00, 'Watches', 'Fossil', 15, 'Active')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(4)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#5</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="<?= asset('images/product-07.jpg') ?>" alt="Product" class="rounded me-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Leather Crossbody Bag</h6>
+                                    <small class="text-muted">SKU: A-BAG-07</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">Accessories</span></td>
+                        <td>Gucci</td>
+                        <td class="fw-bold">$75.00</td>
+                        <td><span class="badge bg-danger-light text-danger fw-bold">3 in stock</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editProduct('Leather Crossbody Bag', 75.00, 'Accessories', 'Gucci', 3, 'Active')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(5)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#6</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="<?= asset('images/product-09.jpg') ?>" alt="Product" class="rounded me-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Urban Running Sneakers</h6>
+                                    <small class="text-muted">SKU: F-SNEAK-09</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">Footwear</span></td>
+                        <td>Nike</td>
+                        <td class="fw-bold">$110.00</td>
+                        <td><span class="badge bg-success-light text-success fw-bold">30 in stock</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editProduct('Urban Running Sneakers', 110.00, 'Footwear', 'Nike', 30, 'Active')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(6)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#7</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="<?= asset('images/product-10.jpg') ?>" alt="Product" class="rounded me-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Silk Floral Dress</h6>
+                                    <small class="text-muted">SKU: W-DRESS-10</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">Women</span></td>
+                        <td>Zara</td>
+                        <td class="fw-bold">$95.00</td>
+                        <td><span class="badge bg-success-light text-success fw-bold">12 in stock</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editProduct('Silk Floral Dress', 95.00, 'Women', 'Zara', 12, 'Active')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(7)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td><strong>#8</strong></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="<?= asset('images/product-12.jpg') ?>" alt="Product" class="rounded me-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0 fw-bold">Classic Aviator Sunglasses</h6>
+                                    <small class="text-muted">SKU: A-GLASS-12</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">Accessories</span></td>
+                        <td>Ray-Ban</td>
+                        <td class="fw-bold">$45.00</td>
+                        <td><span class="badge bg-success-light text-success fw-bold">55 in stock</span></td>
+                        <td><span class="badge bg-success">Active</span></td>
+                        <td class="text-end pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-1" onclick="editProduct('Classic Aviator Sunglasses', 45.00, 'Accessories', 'Ray-Ban', 55, 'Active')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(8)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer d-flex justify-content-between align-items-center py-3">
+        <span class="text-muted small">Showing 1 to 8 of 48 products</span>
+        <nav>
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link" href="#">Next</a></li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Add/Edit Product Modal -->
 <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -122,197 +301,94 @@ $content = ob_start();
                 <h5 class="modal-title" id="productModalLabel">Add New Product</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="productForm" method="POST" enctype="multipart/form-data">
+            <form id="productForm" onsubmit="event.preventDefault(); bootstrap.Modal.getInstance(document.getElementById('productModal')).hide(); alert('Product updated successfully (Mockup mode).');">
                 <div class="modal-body">
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="name" class="form-label">Product Name *</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
+                        <div class="col-md-8">
+                            <label for="prod_name" class="form-label">Product Name *</label>
+                            <input type="text" class="form-control" id="prod_name" required placeholder="e.g. Classic Oxford Shirt">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="prod_price" class="form-label">Price ($) *</label>
+                            <input type="number" step="0.01" class="form-control" id="prod_price" required placeholder="0.00">
                         </div>
                         <div class="col-md-6">
-                            <label for="price" class="form-label">Price *</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="category_id" class="form-label">Category</label>
-                            <select class="form-select" id="category_id" name="category_id">
-                                <option value="">Select Category</option>
-                                <?php foreach ($categories as $category): ?>
-                                    <option value="<?= $category['categoryID'] ?>"><?= htmlspecialchars($category['name'] ?? 'Unnamed Category') ?></option>
-                                <?php endforeach; ?>
+                            <label for="prod_category" class="form-label">Category *</label>
+                            <select class="form-select" id="prod_category" required>
+                                <option value="Women">Women</option>
+                                <option value="Men">Men</option>
+                                <option value="Accessories">Accessories</option>
+                                <option value="Footwear">Footwear</option>
+                                <option value="Watches">Watches</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label for="brand_id" class="form-label">Brand</label>
-                            <select class="form-select" id="brand_id" name="brand_id">
-                                <option value="">Select Brand</option>
-                                <?php foreach ($brands as $brand): ?>
-                                    <option value="<?= $brand['brandID'] ?>"><?= htmlspecialchars($brand['name'] ?? 'Unnamed Brand') ?></option>
-                                <?php endforeach; ?>
+                            <label for="prod_brand" class="form-label">Brand *</label>
+                            <select class="form-select" id="prod_brand" required>
+                                <option value="Zara">Zara</option>
+                                <option value="Ralph Lauren">Ralph Lauren</option>
+                                <option value="Levi's">Levi's</option>
+                                <option value="Nike">Nike</option>
+                                <option value="Fossil">Fossil</option>
+                                <option value="Gucci">Gucci</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label for="stock" class="form-label">Stock Quantity *</label>
-                            <input type="number" class="form-control" id="stock" name="stock" min="0" required>
+                            <label for="prod_stock" class="form-label">Stock Quantity *</label>
+                            <input type="number" class="form-control" id="prod_stock" required placeholder="10">
                         </div>
                         <div class="col-md-6">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-select" id="status" name="status">
-                                <option value="1">Active</option>
-                                <option value="0">Inactive</option>
+                            <label for="prod_status" class="form-label">Status</label>
+                            <select class="form-select" id="prod_status">
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
                             </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="featured" class="form-label">Featured Product</label>
-                            <select class="form-select" id="featured" name="featured">
-                                <option value="0">No</option>
-                                <option value="1">Yes</option>
-                            </select>
-                            <small class="form-text text-muted">Featured products appear prominently on homepage</small>
                         </div>
                         <div class="col-12">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                            <label for="prod_desc" class="form-label">Description</label>
+                            <textarea class="form-control" id="prod_desc" rows="3" placeholder="Enter product details, material, and features..."></textarea>
                         </div>
                         <div class="col-12">
-                            <label for="image" class="form-label">Product Image</label>
-                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                            <small class="form-text text-muted">Supported formats: JPG, PNG, GIF, WebP (Max 5MB)</small>
-                            <div id="imagePreview" class="mt-2" style="display: none;">
-                                <img id="preview" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="prod_featured">
+                                <label class="form-check-label" for="prod_featured">
+                                    Feature on homepage
+                                </label>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Product</button>
+                    <button type="submit" class="btn btn-primary" id="saveProductBtn">Save Product</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<?php
-$content = ob_get_clean();
-
-// Products-specific JavaScript
-$inline_scripts = '
-// Product Management JavaScript
-let editMode = false;
-let editId = null;
-
+<script>
 function openCreateModal() {
-    editMode = false;
-    editId = null;
-    document.getElementById("productModalLabel").textContent = "Add New Product";
-    document.getElementById("productForm").reset();
-    document.getElementById("imagePreview").style.display = "none";
-    document.getElementById("productForm").action = window.OneStoreAdmin.adminUrl("products/store");
+    document.getElementById('productModalLabel').textContent = 'Add New Product';
+    document.getElementById('productForm').reset();
+    document.getElementById('saveProductBtn').textContent = 'Create Product';
 }
 
-function editProduct(id) {
-    editMode = true;
-    editId = id;
-    document.getElementById("productModalLabel").textContent = "Edit Product";
-    
-    // Fetch product data
-    fetch(window.OneStoreAdmin.adminUrl("products/get?id=" + id))
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const product = data.product;
-                document.getElementById("name").value = product.name || product.productName || "";
-                document.getElementById("price").value = product.price || "";
-                document.getElementById("category_id").value = product.categoryID || "";
-                document.getElementById("brand_id").value = product.brandID || "";
-                document.getElementById("stock").value = product.stock || product.stock_quantity || "";
-                // In the editProduct function, add this line after the status line:
-document.getElementById("featured").value = product.featured || "0";
-                document.getElementById("status").value = product.status || "";
-                document.getElementById("description").value = product.description || "";
-                
-                // Show existing image if available
-                if (product.image_path) {
-                    document.getElementById("preview").src = window.OneStoreAdmin.baseUrl + "/uploads/" + product.image_path;
-                    document.getElementById("imagePreview").style.display = "block";
-                }
-                
-                document.getElementById("productForm").action = window.OneStoreAdmin.adminUrl("products/update?id=" + id);
-                new bootstrap.Modal(document.getElementById("productModal")).show();
-            }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("Error loading product data");
-        });
+function editProduct(name, price, category, brand, stock, status) {
+    document.getElementById('productModalLabel').textContent = 'Edit Product: ' + name;
+    document.getElementById('prod_name').value = name;
+    document.getElementById('prod_price').value = price;
+    document.getElementById('prod_category').value = category;
+    document.getElementById('prod_brand').value = brand;
+    document.getElementById('prod_stock').value = stock;
+    document.getElementById('prod_status').value = status;
+    document.getElementById('saveProductBtn').textContent = 'Save Changes';
+    new bootstrap.Modal(document.getElementById('productModal')).show();
 }
 
-function deleteProduct(id) {
-    if (confirm("Are you sure you want to delete this product?")) {
-        const form = document.createElement("form");
-        form.method = "POST";
-        form.action = window.OneStoreAdmin.adminUrl("products/delete?id=" + id);
-        document.body.appendChild(form);
-        form.submit();
+function confirmDelete(id) {
+    if (confirm('Are you sure you want to delete this product? (Mockup mode)')) {
+        alert('Product deleted successfully (Mockup mode).');
     }
 }
-
-// Image preview functionality
-document.getElementById("image").addEventListener("change", function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById("preview").src = e.target.result;
-            document.getElementById("imagePreview").style.display = "block";
-        };
-        reader.readAsDataURL(file);
-    } else {
-        document.getElementById("imagePreview").style.display = "none";
-    }
-});
-
-// Form submission
-document.getElementById("productForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const submitBtn = this.querySelector("button[type=submit]");
-    const originalText = submitBtn.textContent;
-    
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Saving...";
-    
-    fetch(this.action, {
-        method: "POST",
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            bootstrap.Modal.getInstance(document.getElementById("productModal")).hide();
-            location.reload();
-        } else {
-            alert(data.message || "An error occurred");
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        alert("An error occurred while saving the product");
-    })
-    .finally(() => {
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
-    });
-});
-
-console.log("Product management loaded successfully");
-';
-
-// Include the admin layout
-include ROOT_PATH . '/app/Views/Admin/layouts/admin.php';
-?> 
+</script>

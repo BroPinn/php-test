@@ -1,74 +1,59 @@
-<?php use App\Helpers\Helper; ?>
-
-<!-- Register -->
+<!-- Register Page -->
 <div class="bg0 p-t-75 p-b-85">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
-                <div class="bor10 p-lr-40 p-t-40 p-b-40">
+                <div class="bor10 p-lr-40 p-t-40 p-b-40 bg0">
                     <h3 class="mtext-111 cl2 txt-center p-b-30">
                         Create Account
                     </h3>
 
-                    <?php if (Helper::hasFlash('error')): ?>
-                        <div class="alert alert-danger m-b-20">
-                            <?= Helper::getFlash('error') ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <?php if (Helper::hasFlash('success')): ?>
-                        <div class="alert alert-success m-b-20">
-                            <?= Helper::getFlash('success') ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <form method="POST" action="/onestore/register">
+                    <form action="<?= url('account') ?>" method="GET">
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="p-b-20">
                                     <label class="stext-102 cl3 p-b-5">First Name *</label>
-                                    <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20" type="text" name="firstName" required value="<?= htmlspecialchars($_POST['firstName'] ?? '') ?>">
+                                    <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20 w-full" type="text" name="firstName" placeholder="John" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="p-b-20">
                                     <label class="stext-102 cl3 p-b-5">Last Name *</label>
-                                    <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20" type="text" name="lastName" required value="<?= htmlspecialchars($_POST['lastName'] ?? '') ?>">
+                                    <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20 w-full" type="text" name="lastName" placeholder="Doe" required>
                                 </div>
                             </div>
                         </div>
 
                         <div class="p-b-20">
                             <label class="stext-102 cl3 p-b-5">Email Address *</label>
-                            <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20" type="email" name="email" required value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+                            <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20 w-full" type="email" name="email" placeholder="john.doe@example.com" required>
                         </div>
 
                         <div class="p-b-20">
                             <label class="stext-102 cl3 p-b-5">Phone Number</label>
-                            <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20" type="tel" name="phone" value="<?= htmlspecialchars($_POST['phone'] ?? '') ?>">
+                            <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20 w-full" type="tel" name="phone" placeholder="+1 (555) 000-0000">
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="p-b-20">
                                     <label class="stext-102 cl3 p-b-5">Password *</label>
-                                    <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20" type="password" name="password" required>
-                                    <small class="stext-115 cl6">Minimum 8 characters with uppercase, lowercase, and number</small>
+                                    <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20 w-full" type="password" name="password" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="p-b-20">
                                     <label class="stext-102 cl3 p-b-5">Confirm Password *</label>
-                                    <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20" type="password" name="confirm_password" required>
+                                    <input class="stext-104 cl2 plh4 size-116 bor13 p-lr-20 w-full" type="password" name="confirm_password" required>
                                 </div>
                             </div>
                         </div>
 
                         <div class="p-b-25">
                             <div class="flex-w">
-                                <input type="checkbox" id="agree_terms" name="agree_terms" required class="m-r-8">
-                                <label for="agree_terms" class="stext-113 cl6">
-                                    I agree to the <a href="/terms-conditions" class="cl2 hov-cl1">Terms & Conditions</a> and <a href="/privacy-policy" class="cl2 hov-cl1">Privacy Policy</a>
+                                <input type="checkbox" id="terms" name="terms" class="m-r-8" required checked>
+                                <label for="terms" class="stext-113 cl6">
+                                    I agree to the <a href="<?= url('about') ?>" class="cl2 hov-cl1 font-weight-bold">Terms & Conditions</a> and <a href="<?= url('about') ?>" class="cl2 hov-cl1 font-weight-bold">Privacy Policy</a>
                                 </label>
                             </div>
                         </div>
@@ -81,7 +66,7 @@
                             <span class="stext-113 cl6">
                                 Already have an account?
                             </span>
-                            <a href="/onestore/login" class="stext-113 cl2 hov-cl1 trans-04">
+                            <a href="<?= url('login') ?>" class="stext-113 cl2 hov-cl1 trans-04 font-weight-bold">
                                 Sign In
                             </a>
                         </div>

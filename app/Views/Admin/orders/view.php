@@ -1,372 +1,326 @@
-<?php
-use App\Helpers\Helper;
-
-$page_title = 'Order Details - OneStore Admin';
-$content = ob_start();
-?>
-
 <!-- Breadcrumb and Header -->
 <nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/admin/orders">Orders</a></li>
-        <li class="breadcrumb-item active">Order #<?= htmlspecialchars($order['order_number'] ?? $order['orderID']) ?></li>
+        <li class="breadcrumb-item"><a href="<?= admin_url('orders') ?>">Orders</a></li>
+        <li class="breadcrumb-item active">Order #ORD-7829</li>
     </ol>
 </nav>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h2 class="mb-1">
-            <i class="fas fa-receipt text-primary me-2"></i>Order #<?= htmlspecialchars($order['order_number'] ?? $order['orderID']) ?>
+            <i class="fas fa-receipt text-primary me-2"></i>Order #ORD-7829
         </h2>
-        <p class="text-muted mb-0">Order placed on <?= date('F j, Y \a\t g:i A', strtotime($order['created_at'])) ?></p>
+        <p class="text-muted mb-0">Order placed on October 22, 2026 at 10:30 AM</p>
     </div>
     <div>
-        <a href="/admin/orders" class="btn btn-outline-secondary me-2">
+        <a href="<?= admin_url('orders') ?>" class="btn btn-outline-secondary me-2">
             <i class="fas fa-arrow-left me-1"></i>Back to Orders
         </a>
-        <button type="button" class="btn btn-primary" onclick="updateOrderStatus(<?= $order['orderID'] ?>, '<?= htmlspecialchars($order['order_status'] ?? $order['status'] ?? 'pending') ?>')">
+        <button type="button" class="btn btn-outline-dark me-2" onclick="window.print()">
+            <i class="fas fa-print me-1"></i>Print Invoice
+        </button>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
             <i class="fas fa-edit me-1"></i>Update Status
         </button>
     </div>
 </div>
 
-<!-- Order Status and Quick Info -->
-<div class="row mb-4">
-    <div class="col-md-8">
+<!-- Order Status Quick Summary -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card bg-light border-0">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-bold">Order Status</small>
+                <div class="mt-2">
+                    <span class="badge bg-primary px-3 py-2 fs-6">Shipped</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-light border-0">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-bold">Payment Status</small>
+                <div class="mt-2">
+                    <span class="badge bg-success px-3 py-2 fs-6">Paid (Stripe)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-light border-0">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-bold">Total Amount</small>
+                <div class="mt-2">
+                    <h4 class="fw-bold mb-0 text-dark">$249.00</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-light border-0">
+            <div class="card-body">
+                <small class="text-muted text-uppercase fw-bold">Tracking Number</small>
+                <div class="mt-2">
+                    <span class="fw-semibold text-primary">TRK-98421074-US</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Order Items and Financials -->
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Purchased Items (3)</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th class="text-end pe-4">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="<?= asset('images/product-01.jpg') ?>" alt="Product" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">Women's Trench Coat</h6>
+                                            <small class="text-muted">Brand: Zara | Size: M | Color: Beige</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>$129.99</td>
+                                <td>1</td>
+                                <td class="text-end pe-4 fw-bold">$129.99</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="<?= asset('images/product-07.jpg') ?>" alt="Product" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">Leather Crossbody Bag</h6>
+                                            <small class="text-muted">Brand: Gucci | Color: Brown</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>$75.00</td>
+                                <td>1</td>
+                                <td class="text-end pe-4 fw-bold">$75.00</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <img src="<?= asset('images/product-12.jpg') ?>" alt="Product" class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">Classic Aviator Sunglasses</h6>
+                                            <small class="text-muted">Brand: Ray-Ban | Color: Gold</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>$45.00</td>
+                                <td>1</td>
+                                <td class="text-end pe-4 fw-bold">$45.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-top p-4">
+                <div class="row justify-content-end">
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Items Subtotal:</span>
+                            <span class="fw-semibold">$249.99</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Promotional Discount:</span>
+                            <span class="text-danger fw-semibold">-$0.99</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Standard Shipping:</span>
+                            <span class="text-success fw-semibold">FREE</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Estimated Tax:</span>
+                            <span class="fw-semibold">$0.00</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <span class="fs-5 fw-bold">Total Paid:</span>
+                            <span class="fs-5 fw-bold text-primary">$249.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Timeline -->
         <div class="card">
-            <div class="card-body" style="background: #f8f9fa; border-radius: 10px;">
-                <div class="row">
-                    <div class="col-md-3">
-                        <span class="form-label">Order Status</span>
-                        <br>
-                        <?php
-                        $statusColors = [
-                            'pending' => 'warning',
-                            'confirmed' => 'info',
-                            'processing' => 'primary',
-                            'shipped' => 'success',
-                            'delivered' => 'success',
-                            'cancelled' => 'danger'
-                        ];
-                        $orderStatus = $order['order_status'] ?? $order['status'] ?? 'pending';
-                        $color = $statusColors[$orderStatus] ?? 'secondary';
-                        ?>
-                        <span class="badge bg-<?= $color ?>" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
-                            <?= ucfirst(htmlspecialchars($orderStatus)) ?>
-                        </span>
+            <div class="card-header">
+                <h5 class="card-title mb-0">Fulfillment Timeline</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0 position-relative">
+                    <li class="d-flex mb-4">
+                        <div class="me-3 text-success">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Order Confirmed & Payment Verified</h6>
+                            <small class="text-muted">October 22, 2026 - 10:32 AM via Stripe</small>
+                        </div>
+                    </li>
+                    <li class="d-flex mb-4">
+                        <div class="me-3 text-success">
+                            <i class="fas fa-box-open fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Packed at Central Warehouse</h6>
+                            <small class="text-muted">October 22, 2026 - 02:15 PM</small>
+                        </div>
+                    </li>
+                    <li class="d-flex mb-4">
+                        <div class="me-3 text-primary">
+                            <i class="fas fa-shipping-fast fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Shipped with FedEx Ground</h6>
+                            <small class="text-muted">October 22, 2026 - 04:45 PM | Tracking: TRK-98421074-US</small>
+                        </div>
+                    </li>
+                    <li class="d-flex opacity-50">
+                        <div class="me-3 text-muted">
+                            <i class="fas fa-home fa-2x"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0 fw-bold">Estimated Delivery</h6>
+                            <small class="text-muted">October 25, 2026</small>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer & Delivery Details -->
+    <div class="col-lg-4">
+        <!-- Customer Info -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Customer Profile</h5>
+                <a href="<?= admin_url('customers') ?>" class="btn btn-sm btn-link p-0">View User</a>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="avatar-md me-3">
+                        <span class="avatar-title rounded-circle bg-primary-light text-primary fs-4">SJ</span>
                     </div>
-                    <div class="col-md-3">
-                        <span class="form-label">Payment Status</span>
-                        <br>
-                        <?php
-                        $paymentColors = [
-                            'pending' => 'warning',
-                            'paid' => 'success',
-                            'failed' => 'danger',
-                            'refunded' => 'secondary'
-                        ];
-                        $paymentStatus = $order['payment_status'] ?? 'pending';
-                        $paymentColor = $paymentColors[$paymentStatus] ?? 'secondary';
-                        ?>
-                        <span class="badge bg-<?= $paymentColor ?>" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
-                            <?= ucfirst(htmlspecialchars($paymentStatus)) ?>
-                        </span>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Sarah Johnson</h6>
+                        <small class="text-muted">Member since Jan 2025</small>
                     </div>
-                    <div class="col-md-3">
-                        <span class="form-label">Payment Method</span>
-                        <br>
-                        <strong><?= ucfirst(htmlspecialchars($order['payment_method'] ?? 'N/A')) ?></strong>
+                </div>
+                <div class="mb-2">
+                    <i class="fas fa-envelope text-muted me-2"></i>
+                    <a href="mailto:sarah.j@example.com" class="text-decoration-none">sarah.j@example.com</a>
+                </div>
+                <div class="mb-2">
+                    <i class="fas fa-phone text-muted me-2"></i>
+                    <span>+1 (555) 345-6789</span>
+                </div>
+                <div>
+                    <i class="fas fa-shopping-bag text-muted me-2"></i>
+                    <span>12 previous orders</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Shipping Address</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-1 fw-bold">Sarah Johnson</p>
+                <p class="text-muted mb-1">742 Evergreen Terrace</p>
+                <p class="text-muted mb-1">Apt 4B</p>
+                <p class="text-muted mb-1">Springfield, OR 97477</p>
+                <p class="text-muted mb-0">United States</p>
+            </div>
+        </div>
+
+        <!-- Payment Details -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Payment Method</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fab fa-cc-visa fa-2x text-primary me-2"></i>
+                    <div>
+                        <div class="fw-bold">Visa ending in 4242</div>
+                        <small class="text-muted">Expires 08/2028</small>
                     </div>
-                    <div class="col-md-3">
-                        <span class="form-label">Total Amount</span>
-                        <br>
-                        <strong class="h5 text-success">$<?= number_format($order['total_amount'], 2) ?></strong>
+                </div>
+                <div class="mt-3 pt-3 border-top">
+                    <div class="d-flex justify-content-between small text-muted mb-1">
+                        <span>Transaction ID:</span>
+                        <code>txn_3N82b94Ksla81</code>
+                    </div>
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>Payment Gateway:</span>
+                        <span>Stripe Payments</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body text-center">
-                <h6 class="text-muted">Quick Actions</h6>
-                <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="updateOrderStatus(<?= $order['orderID'] ?>, '<?= htmlspecialchars($orderStatus) ?>')">
-                    <i class="fas fa-edit"></i> Update Status
-                </button>
-                <button type="button" class="btn btn-outline-info btn-sm" onclick="updatePaymentStatus(<?= $order['orderID'] ?>, '<?= htmlspecialchars($paymentStatus) ?>')">
-                    <i class="fas fa-credit-card"></i> Update Payment
-                </button>
-            </div>
-        </div>
-    </div>
 </div>
 
-<!-- Order Details -->
-<div class="row">
-    <div class="col-md-8">
-        <!-- Order Items -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-shopping-bag me-2"></i>Order Items
-                </h5>
-            </div>
-            <div class="card-body">
-                <?php if (!empty($order['items'])): ?>
-                    <div class="table-responsive">
-                        <table class="table table-borderless">
-                            <thead>
-                                <tr>
-                                    <th>Product</th>
-                                    <th>Quantity</th>
-                                    <th>Price</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($order['items'] as $item): ?>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <?php if (!empty($item['image_path'])): ?>
-                                                    <img src="<?= Helper::upload($item['image_path']) ?>" 
-                                                         alt="<?= htmlspecialchars($item['product_name']) ?>" 
-                                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;" class="me-3">
-                                                <?php else: ?>
-                                                    <div class="me-3 bg-light d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; border-radius: 8px;">
-                                                        <i class="fas fa-image text-muted"></i>
-                                                    </div>
-                                                <?php endif; ?>
-                                                <div>
-                                                    <strong><?= htmlspecialchars($item['product_name']) ?></strong>
-                                                    <?php if (!empty($item['product_sku'])): ?>
-                                                        <br><small class="text-muted">SKU: <?= htmlspecialchars($item['product_sku']) ?></small>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-light text-dark"><?= $item['quantity'] ?></span>
-                                        </td>
-                                        <td>
-                                            $<?= number_format($item['price'], 2) ?>
-                                        </td>
-                                        <td>
-                                            <strong>$<?= number_format($item['total'] ?? ($item['price'] * $item['quantity']), 2) ?></strong>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Order Totals -->
-                    <div class="border-top pt-3">
-                        <div class="row">
-                            <div class="col-md-6 offset-md-6">
-                                <table class="table table-sm">
-                                    <tr>
-                                        <td>Subtotal:</td>
-                                        <td class="text-end">$<?= number_format($order['subtotal'] ?? $order['total_amount'], 2) ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Shipping:</td>
-                                        <td class="text-end">$<?= number_format($order['shipping_amount'] ?? 0, 2) ?></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Tax:</td>
-                                        <td class="text-end">$<?= number_format($order['tax_amount'] ?? 0, 2) ?></td>
-                                    </tr>
-                                    <?php if (($order['discount_amount'] ?? 0) > 0): ?>
-                                    <tr class="text-success">
-                                        <td>Discount:</td>
-                                        <td class="text-end">-$<?= number_format($order['discount_amount'], 2) ?></td>
-                                    </tr>
-                                    <?php endif; ?>
-                                    <tr class="border-top">
-                                        <td><strong>Total:</strong></td>
-                                        <td class="text-end"><strong>$<?= number_format($order['total_amount'], 2) ?></strong></td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                <?php else: ?>
-                    <p class="text-muted">No items found for this order.</p>
-                <?php endif; ?>
-            </div>
-        </div>
-        
-        <!-- Order Notes -->
-        <?php if (!empty($order['notes'])): ?>
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-sticky-note me-2"></i>Order Notes
-                </h5>
-            </div>
-            <div class="card-body">
-                <p class="mb-0"><?= nl2br(htmlspecialchars($order['notes'])) ?></p>
-            </div>
-        </div>
-        <?php endif; ?>
-    </div>
-    
-    <div class="col-md-4">
-        <!-- Customer Information -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-user me-2"></i>Customer Information
-                </h5>
-            </div>
-            <div class="card-body">
-                <?php if (!empty($customer)): ?>
-                    <p class="mb-2">
-                        <strong><?= htmlspecialchars(($customer['firstName'] ?? '') . ' ' . ($customer['lastName'] ?? '')) ?></strong>
-                    </p>
-                    <p class="mb-2">
-                        <i class="fas fa-envelope me-2 text-muted"></i>
-                        <a href="mailto:<?= htmlspecialchars($customer['email'] ?? '') ?>"><?= htmlspecialchars($customer['email'] ?? '') ?></a>
-                    </p>
-                    <?php if (!empty($customer['phone'])): ?>
-                    <p class="mb-2">
-                        <i class="fas fa-phone me-2 text-muted"></i>
-                        <a href="tel:<?= htmlspecialchars($customer['phone']) ?>"><?= htmlspecialchars($customer['phone']) ?></a>
-                    </p>
-                    <?php endif; ?>
-                    <p class="mb-0">
-                        <small class="text-muted">Customer since <?= date('M Y', strtotime($customer['created_at'] ?? 'now')) ?></small>
-                    </p>
-                    <div class="mt-3">
-                        <a href="/admin/customers/view?id=<?= $customer['customerID'] ?>" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-user-circle me-1"></i>View Customer
-                        </a>
-                    </div>
-                <?php else: ?>
-                    <p class="mb-0 text-muted">Guest Customer</p>
-                <?php endif; ?>
-            </div>
-        </div>
-        
-        <!-- Billing Address -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-file-invoice me-2"></i>Billing Address
-                </h5>
-            </div>
-            <div class="card-body">
-                <address class="mb-0">
-                    <?= nl2br(htmlspecialchars($order['billing_address'] ?? 'No billing address provided')) ?>
-                </address>
-            </div>
-        </div>
-        
-        <!-- Shipping Address -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-shipping-fast me-2"></i>Shipping Address
-                </h5>
-            </div>
-            <div class="card-body">
-                <address class="mb-0">
-                    <?= nl2br(htmlspecialchars($order['shipping_address'] ?? 'No shipping address provided')) ?>
-                </address>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Status Update Modal -->
-<div class="modal fade" id="statusModal" tabindex="-1">
+<!-- Update Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Update Order Status</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title">Update Order #ORD-7829</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-                            <form method="POST" action="<?= Helper::adminUrl('orders/update-status') ?>">
+            <form onsubmit="event.preventDefault(); bootstrap.Modal.getInstance(document.getElementById('updateStatusModal')).hide(); alert('Order status updated successfully (Mockup mode).');">
                 <div class="modal-body">
-                    <input type="hidden" name="orderID" id="statusOrderID">
-                    <input type="hidden" name="redirect" value="<?= $_SERVER['REQUEST_URI'] ?>">
-                    
                     <div class="mb-3">
-                        <label class="form-label">Order Status</label>
-                        <select name="order_status" id="orderStatus" class="form-select" required>
+                        <label for="statusSelect" class="form-label">Order Fulfillment Status</label>
+                        <select class="form-select" id="statusSelect">
                             <option value="pending">Pending</option>
-                            <option value="confirmed">Confirmed</option>
                             <option value="processing">Processing</option>
-                            <option value="shipped">Shipped</option>
+                            <option value="shipped" selected>Shipped</option>
                             <option value="delivered">Delivered</option>
                             <option value="cancelled">Cancelled</option>
                         </select>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Status</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Payment Status Update Modal -->
-<div class="modal fade" id="paymentModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Update Payment Status</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" action="/admin/orders/update-payment-status">
-                <div class="modal-body">
-                    <input type="hidden" name="orderID" id="paymentOrderID">
-                    <input type="hidden" name="redirect" value="<?= $_SERVER['REQUEST_URI'] ?>">
-                    
                     <div class="mb-3">
-                        <label class="form-label">Payment Status</label>
-                        <select name="payment_status" id="paymentStatus" class="form-select" required>
-                            <option value="pending">Pending</option>
-                            <option value="paid">Paid</option>
-                            <option value="failed">Failed</option>
-                            <option value="refunded">Refunded</option>
-                        </select>
+                        <label for="trackingInput" class="form-label">Tracking Number</label>
+                        <input type="text" class="form-control" id="trackingInput" value="TRK-98421074-US">
+                    </div>
+                    <div class="mb-3">
+                        <label for="noteInput" class="form-label">Customer Notification Note</label>
+                        <textarea class="form-control" id="noteInput" rows="2" placeholder="Your package is currently in transit..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update Payment Status</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
-<?php
-$content = ob_get_clean();
-
-// Order view-specific JavaScript
-$inline_scripts = '
-function updateOrderStatus(orderID, currentStatus) {
-    document.getElementById("statusOrderID").value = orderID;
-    document.getElementById("orderStatus").value = currentStatus;
-    
-    new bootstrap.Modal(document.getElementById("statusModal")).show();
-}
-
-function updatePaymentStatus(orderID, currentPaymentStatus) {
-    document.getElementById("paymentOrderID").value = orderID;
-    document.getElementById("paymentStatus").value = currentPaymentStatus;
-    
-    new bootstrap.Modal(document.getElementById("paymentModal")).show();
-}
-
-console.log("Order view loaded successfully");
-';
-
-// Include the admin layout
-include ROOT_PATH . '/app/Views/Admin/layouts/admin.php';
-?> 
